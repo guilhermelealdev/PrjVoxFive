@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -31,10 +32,25 @@ public class RestControllerHandler {
 				badRequest.getMessage(), badRequest.getClass().getName(), request.getRequestURI());
 	}
 
+	@ExceptionHandler(InternalServerErrorException.class)
+	public ResponseEntity<ExceptionDetails> handlerInternalServerErrorException(
+			InternalServerErrorException serverError, HttpServletRequest request) {
+		return buildException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", serverError.getMessage(),
+				serverError.getClass().getName(), request.getRequestURI());
+	}
+
+	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+	public ResponseEntity<ExceptionDetails> handlerMethodNotSupportedException(
+			HttpRequestMethodNotSupportedException methodNotSupported, HttpServletRequest request) {
+		return buildException(HttpStatus.METHOD_NOT_ALLOWED, "Method Not Allowed",
+				methodNotSupported.getMessage(), methodNotSupported.getClass().getName(), request.getRequestURI());
+	}
+
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<ExceptionDetails> handlerGeneralException(InternalServerErrorException serverError,
-			HttpServletRequest request) {
-		return buildException(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong, please check documentation.",
-				serverError.getMessage(), serverError.getClass().getName(), request.getRequestURI());
+	public ResponseEntity<ExceptionDetails> handlerGeneralException(
+			Exception exception, HttpServletRequest request) {
+		return buildException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
+				exception.getMessage() != null ? exception.getMessage() : "Unexpected error occurred.",
+				exception.getClass().getName(), request.getRequestURI());
 	}
 }
