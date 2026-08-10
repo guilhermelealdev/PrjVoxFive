@@ -38,9 +38,15 @@ public class UserController {
 	}
 
 	@PostMapping
-	public UserResponseDto save(@RequestBody UserRequestDto dto) {
+	public UserResponseDto saveUser(@RequestBody UserRequestDto dto) {
 		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
-		return userService.save(dto);
+		return userService.saveUser(dto);
+	}
+	
+	@PostMapping("/admin")
+	public UserResponseDto saveAdmin(@RequestBody UserRequestDto dto) {
+		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
+		return userService.saveAdmin(dto);
 	}
 
 	@PutMapping("/{id}")

@@ -23,19 +23,28 @@ public class UserService {
 
 	public UserResponseDto findByEmail(String email) {
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email not found!"));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email not found."));
 
 		return userMapper.toUserResponseDto(user);
 	}
 
 	@Transactional
-	public UserResponseDto save(UserRequestDto dto) {
+	public UserResponseDto saveAdmin(UserRequestDto dto) {
+		return saveUserWithRole(dto, "ADMIN");
+	}
 
+	@Transactional
+	public UserResponseDto saveUser(UserRequestDto dto) {
+		return saveUserWithRole(dto, "USER");
+	}
+
+	private UserResponseDto saveUserWithRole(UserRequestDto dto, String role) {
 		userRepository.findByEmail(dto.getEmail()).ifPresent(user -> {
-			throw new BadRequestException("E-mail já cadastrado no sistema!");
+			throw new BadRequestException("E-mail already exists.");
 		});
 
 		User user = userMapper.toUser(dto);
+		user.setRole(role);
 		User savedUser = userRepository.save(user);
 		return userMapper.toUserResponseDto(savedUser);
 	}
