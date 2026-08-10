@@ -21,6 +21,7 @@ public class FeedbackService {
 	private final FeedbackRepository feedbackRepository;
 	private final FeedbackMapper feedbackMapper;
 	
+	
 	public List<FeedbackResponseDto> findByUsername(String username) {
 		List<Feedback> feedbacks = feedbackRepository.findByUserUsername(username);
 		return feedbackMapper.toFeedbackResponseDtoList(feedbacks);

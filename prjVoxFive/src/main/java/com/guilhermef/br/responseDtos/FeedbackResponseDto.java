@@ -22,6 +22,9 @@ public class FeedbackResponseDto {
 	private String type;
 	
 	@NotBlank
+	private String status;
+	
+	@NotBlank
 	private String message;
 	
 	@NotBlank
