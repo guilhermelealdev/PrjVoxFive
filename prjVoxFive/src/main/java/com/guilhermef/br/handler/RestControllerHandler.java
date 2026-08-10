@@ -16,23 +16,25 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestControllerAdvice
 public class RestControllerHandler {
 
+	public ResponseEntity<ExceptionDetails> buildException(HttpStatus httpStatus, String title, String details,
+			String developerMessage, String path) {
+		ExceptionDetails exception = ExceptionDetails.builder().timestamp(LocalDateTime.now())
+				.status(httpStatus.value()).title(title).details(details).developerMessage(developerMessage).path(path)
+				.build();
+		return new ResponseEntity<>(exception, httpStatus);
+	}
+
 	@ExceptionHandler(BadRequestException.class)
 	public ResponseEntity<ExceptionDetails> handlerBadRequestException(BadRequestException badRequest,
 			HttpServletRequest request) {
-		return new ResponseEntity<>(
-				ExceptionDetails.builder().timestamp(LocalDateTime.now()).status(HttpStatus.BAD_REQUEST.value())
-						.title("Bad Request Exception, check the documentation.").details(badRequest.getMessage())
-						.developerMessage(badRequest.getClass().getName()).path(request.getRequestURI()).build(),
-				HttpStatus.BAD_REQUEST);
+		return buildException(HttpStatus.BAD_REQUEST, "Bad Request Exception, please insert valid credentials.",
+				badRequest.getMessage(), badRequest.getClass().getName(), request.getRequestURI());
 	}
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ExceptionDetails> handlerGeneralException(InternalServerErrorException serverError,
 			HttpServletRequest request) {
-		return new ResponseEntity<>(ExceptionDetails.builder().timestamp(LocalDateTime.now())
-				.status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-				.title("Internal Server Error Exception, check the documentation.").details(serverError.getMessage())
-				.developerMessage(serverError.getClass().getName()).path(request.getRequestURI()).build(),
-				HttpStatus.INTERNAL_SERVER_ERROR);
+		return buildException(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong, please check documentation.",
+				serverError.getMessage(), serverError.getClass().getName(), request.getRequestURI());
 	}
 }
