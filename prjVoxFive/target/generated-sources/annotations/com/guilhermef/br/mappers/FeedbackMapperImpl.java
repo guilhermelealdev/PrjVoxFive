@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-08-05T12:35:43-0300",
+    date = "2026-08-10T07:41:18-0300",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.42.0.v20250526-2018, environment: Java 21.0.8 (Eclipse Adoptium)"
 )
 @Component
@@ -27,6 +27,7 @@ public class FeedbackMapperImpl extends FeedbackMapper {
         feedbackResponseDto.setCreation( feedback.getCreation() );
         feedbackResponseDto.setId( feedback.getId() );
         feedbackResponseDto.setMessage( feedback.getMessage() );
+        feedbackResponseDto.setResponse( feedback.getResponse() );
         feedbackResponseDto.setType( feedback.getType() );
 
         return feedbackResponseDto;

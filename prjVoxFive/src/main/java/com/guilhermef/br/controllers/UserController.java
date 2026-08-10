@@ -31,7 +31,7 @@ public class UserController {
 	private final UserService userService;
 	private final DateUtil dateUtil;
 	
-	@GetMapping("/by-email")
+	@GetMapping("/email")
 	public ResponseEntity<UserResponseDto> findByEmail(@RequestParam String email) {
 	    log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
 	    return new ResponseEntity<>(userService.findByEmail(email), HttpStatus.OK);
@@ -54,8 +54,8 @@ public class UserController {
 		userService.deleteById(id);
 	}
 	
-	@GetMapping("/{id}")
-	public UserResponseDto getById(@PathVariable Long id) {
+	@GetMapping("/id")
+	public UserResponseDto getById(@RequestParam Long id) {
 		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
 		return userService.findById(id);
 	}
