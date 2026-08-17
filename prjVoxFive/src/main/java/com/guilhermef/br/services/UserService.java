@@ -23,7 +23,14 @@ public class UserService {
 
 	public UserResponseDto findByEmail(String email) {
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("Email not found."));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new BadRequestException("User not found."));
+
+		return userMapper.toUserResponseDto(user);
+	}
+	
+	public UserResponseDto findByUsername(String username) {
+
+		User user = userRepository.findByUsername(username).orElseThrow(() -> new BadRequestException("User not found."));
 
 		return userMapper.toUserResponseDto(user);
 	}
@@ -39,10 +46,16 @@ public class UserService {
 	}
 
 	private UserResponseDto saveUserWithRole(UserRequestDto dto, String role) {
+		userRepository.findByUsername(dto.getUsername()).ifPresent(user->{
+			throw new BadRequestException("Username already exist.");
+		});
+		
 		userRepository.findByEmail(dto.getEmail()).ifPresent(user -> {
 			throw new BadRequestException("E-mail already exists.");
 		});
-
+		
+		
+		
 		User user = userMapper.toUser(dto);
 		user.setRole(role);
 		User savedUser = userRepository.save(user);
@@ -69,6 +82,7 @@ public class UserService {
 		User updatedUser = userRepository.save(user);
 		return userMapper.toUserResponseDto(updatedUser);
 	}
+	
 
 	public void deleteById(Long id) {
 		findByIdOrThrowBadRequest(id);

@@ -8,6 +8,7 @@ import com.guilhermef.br.entities.Feedback;
 import com.guilhermef.br.exceptions.BadRequestException;
 import com.guilhermef.br.mappers.FeedbackMapper;
 import com.guilhermef.br.repositories.FeedbackRepository;
+import com.guilhermef.br.requestDtos.FeedbackAnswerRequestDto;
 import com.guilhermef.br.requestDtos.FeedbackRequestDto;
 import com.guilhermef.br.responseDtos.FeedbackResponseDto;
 
@@ -20,18 +21,17 @@ public class FeedbackService {
 
 	private final FeedbackRepository feedbackRepository;
 	private final FeedbackMapper feedbackMapper;
-	
-	
+
 	public List<FeedbackResponseDto> findByUsername(String username) {
 		List<Feedback> feedbacks = feedbackRepository.findByUserUsername(username);
 		return feedbackMapper.toFeedbackResponseDtoList(feedbacks);
 	}
-	
+
 	public List<FeedbackResponseDto> findByType(String type) {
 		List<Feedback> feedbacks = feedbackRepository.findByType(type);
 		return feedbackMapper.toFeedbackResponseDtoList(feedbacks);
 	}
-	
+
 	public List<FeedbackResponseDto> findByStatus(String status) {
 		List<Feedback> feedbacks = feedbackRepository.findByStatus(status);
 		return feedbackMapper.toFeedbackResponseDtoList(feedbacks);
@@ -40,6 +40,7 @@ public class FeedbackService {
 	@Transactional
 	public FeedbackResponseDto save(FeedbackRequestDto dto) {
 		Feedback feedback = feedbackMapper.toFeedback(dto);
+		feedback.setStatus("Em análise");
 		Feedback savedFeedback = feedbackRepository.save(feedback);
 		return feedbackMapper.toFeedbackResponseDto(savedFeedback);
 	}
@@ -68,6 +69,14 @@ public class FeedbackService {
 	public FeedbackResponseDto update(Long id, FeedbackRequestDto dto) {
 		Feedback feedback = findOrThrowBadRequest(id);
 		feedbackMapper.updateFeedbackFromDto(dto, feedback);
+		Feedback updatedFeedback = feedbackRepository.save(feedback);
+		return feedbackMapper.toFeedbackResponseDto(updatedFeedback);
+	}
+
+	public FeedbackResponseDto answer(Long id, FeedbackAnswerRequestDto dto) {
+		Feedback feedback = findOrThrowBadRequest(id);
+		feedback.setResponse(dto.getAnswer());
+
 		Feedback updatedFeedback = feedbackRepository.save(feedback);
 		return feedbackMapper.toFeedbackResponseDto(updatedFeedback);
 	}

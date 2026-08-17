@@ -26,8 +26,7 @@ public class UserRequestDto {
 	
 	@OneToMany
 	private List<Feedback> feedback;
-	
-	private String role;
+
 	
 	
 }

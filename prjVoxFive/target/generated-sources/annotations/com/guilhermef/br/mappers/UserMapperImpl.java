@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-08-10T14:04:35-0300",
+    date = "2026-08-17T14:23:15-0300",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.42.0.v20250526-2018, environment: Java 21.0.8 (Eclipse Adoptium)"
 )
 @Component
@@ -47,7 +47,6 @@ public class UserMapperImpl extends UserMapper {
         }
         user.id( userRequest.getId() );
         user.password( userRequest.getPassword() );
-        user.role( userRequest.getRole() );
         user.username( userRequest.getUsername() );
 
         return user.build();
@@ -94,9 +93,6 @@ public class UserMapperImpl extends UserMapper {
         }
         if ( dto.getPassword() != null ) {
             user.setPassword( dto.getPassword() );
-        }
-        if ( dto.getRole() != null ) {
-            user.setRole( dto.getRole() );
         }
         if ( dto.getUsername() != null ) {
             user.setUsername( dto.getUsername() );

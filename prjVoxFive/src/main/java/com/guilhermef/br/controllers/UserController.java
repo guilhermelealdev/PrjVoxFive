@@ -36,6 +36,12 @@ public class UserController {
 	    log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
 	    return new ResponseEntity<>(userService.findByEmail(email), HttpStatus.OK);
 	}
+	
+	@GetMapping("/name")
+	public ResponseEntity<UserResponseDto> findByUsername(@RequestParam String username) {
+	    log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
+	    return new ResponseEntity<>(userService.findByUsername(username), HttpStatus.OK);
+	}
 
 	@PostMapping
 	public UserResponseDto saveUser(@RequestBody UserRequestDto dto) {
