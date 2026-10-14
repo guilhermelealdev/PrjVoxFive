@@ -1,10 +1,10 @@
 package com.guilhermef.br.controllers;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,73 +19,71 @@ import com.guilhermef.br.requestDtos.FeedbackAnswerRequestDto;
 import com.guilhermef.br.requestDtos.FeedbackRequestDto;
 import com.guilhermef.br.responseDtos.FeedbackResponseDto;
 import com.guilhermef.br.services.FeedbackService;
-import com.guilhermef.br.utils.DateUtil;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import jakarta.validation.Valid;
 
 @RestController
-@RequiredArgsConstructor
-@Log4j2
 @RequestMapping("/feedbacks")
 public class FeedbackController {
 
 	private final FeedbackService feedbackService;
-	private final DateUtil dateUtil;
+
+	public FeedbackController(FeedbackService feedbackService) {
+		this.feedbackService = feedbackService;
+	}
 
 	@GetMapping("/name")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<List<FeedbackResponseDto>> findByUsername(@RequestParam String username) {
-		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
-		return new ResponseEntity<>(feedbackService.findByUsername(username), HttpStatus.OK);
+		return ResponseEntity.ok(feedbackService.findByUsername(username));
 	}
 
 	@GetMapping("/type")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<List<FeedbackResponseDto>> findByType(@RequestParam String type) {
-		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
-		return new ResponseEntity<>(feedbackService.findByType(type), HttpStatus.OK);
+		return ResponseEntity.ok(feedbackService.findByType(type));
 	}
 
 	@GetMapping("/status")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<List<FeedbackResponseDto>> findByStatus(@RequestParam String status) {
-		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
-		return new ResponseEntity<>(feedbackService.findByStatus(status), HttpStatus.OK);
+		return ResponseEntity.ok(feedbackService.findByStatus(status));
 	}
 
 	@PostMapping
-	public ResponseEntity<FeedbackResponseDto> save(@RequestBody FeedbackRequestDto dto) {
-		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
-		return new ResponseEntity<>(feedbackService.save(dto), HttpStatus.CREATED);
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<FeedbackResponseDto> save(@Valid @RequestBody FeedbackRequestDto dto) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(feedbackService.save(dto));
 	}
 
-	@GetMapping("id")
+	@GetMapping("/id")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<FeedbackResponseDto> findById(@RequestParam Long id) {
-		return new ResponseEntity<>(feedbackService.findById(id), HttpStatus.OK);
+		return ResponseEntity.ok(feedbackService.findById(id));
 	}
 
 	@GetMapping
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<List<FeedbackResponseDto>> listAll() {
-		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
-		return new ResponseEntity<>(feedbackService.listAll(), HttpStatus.OK);
+		return ResponseEntity.ok(feedbackService.listAll());
 	}
 
 	@DeleteMapping("/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<Void> deleteById(@PathVariable Long id) {
-		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
 		feedbackService.deleteById(id);
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		return ResponseEntity.noContent().build();
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<FeedbackResponseDto> update(@RequestBody FeedbackRequestDto dto, @PathVariable Long id) {
-		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
-		return new ResponseEntity<>(feedbackService.update(id, dto), HttpStatus.OK);
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<FeedbackResponseDto> update(@PathVariable Long id, @Valid @RequestBody FeedbackRequestDto dto) {
+		return ResponseEntity.ok(feedbackService.update(id, dto));
 	}
 
 	@PutMapping("/admin/{id}/reply")
-	public ResponseEntity<FeedbackResponseDto> answer(@PathVariable Long id,
-			@RequestBody FeedbackAnswerRequestDto dto) {
-
-		log.info(dateUtil.formatLocalTimeToDatabaseStyle(LocalDateTime.now()));
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<FeedbackResponseDto> answer(@PathVariable Long id, @Valid @RequestBody FeedbackAnswerRequestDto dto) {
 		return ResponseEntity.ok(feedbackService.answer(id, dto));
 	}
 }

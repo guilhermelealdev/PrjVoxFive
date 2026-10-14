@@ -2,32 +2,15 @@ package com.guilhermef.br.responseDtos;
 
 import java.time.LocalDateTime;
 
-import org.springframework.format.annotation.DateTimeFormat;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-import com.guilhermef.br.utils.DateUtil;
-
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-
-@Data
-public class FeedbackResponseDto {
-	
-	@NotBlank
-	private Long id;
-	
-	@DateTimeFormat
-	private String creation = new DateUtil().formatLocalTimeToDatabaseStyle(LocalDateTime.now());
-	
-	@NotBlank
-	private String type;
-	
-	@NotBlank
-	private String status;
-	
-	@NotBlank
-	private String message;
-	
-	@NotBlank
-	private String response;
-	
+public record FeedbackResponseDto(
+		Long id,
+		@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+		LocalDateTime creation,
+		String type,
+		String status,
+		String message,
+		String response
+) {
 }

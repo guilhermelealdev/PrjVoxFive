@@ -1,32 +1,27 @@
 package com.guilhermef.br.requestDtos;
 
-import java.util.List;
-
-import com.guilhermef.br.entities.Feedback;
-
-import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
-@Data
-public class UserRequestDto {
-	
-	@NotBlank
-	private Long id;
+public record UserRequestDto(
 
-	@NotBlank
-	private String username;
+		@NotBlank
+		@Size(min = 3, max = 100)
+		String username,
 
-	@NotBlank
-	private String password;
+		@NotBlank
+		@Size(min = 12, max = 128)
+		@Pattern(
+				regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
+				message = "Password must contain lowercase, uppercase and digit"
+		)
+		String password,
 
-	@Email
-	private String email;
-	
-	@OneToMany
-	private List<Feedback> feedback;
-
-	
-	
+		@NotBlank
+		@Email
+		@Size(max = 255)
+		String email
+) {
 }

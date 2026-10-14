@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId:-no-correlation}] %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="net.logstash.logback.encoder.LogstashEncoder">
+			<includeMdcKeyName>correlationId</includeMdcKeyName>
+		</encoder>
+	</appender>
+
+	<springProfile name="prod">
+		<root level="INFO">
+			<appender-ref ref="JSON"/>
+		</root>
+	</springProfile>
+
+	<springProfile name="!prod">
+		<root level="INFO">
+			<appender-ref ref="CONSOLE"/>
+		</root>
+		<logger name="com.guilhermef.br" level="DEBUG"/>
+	</springProfile>
+</configuration>
