@@ -1,8 +1,34 @@
+import { useState } from 'react';
+
 export default function ConfirmarEnvio({ dados, aoEditar, aoConfirmar }) {
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState('');
+
+  const tratarConfirmar = async () => {
+    setErro('');
+    setEnviando(true);
+    try {
+      await aoConfirmar();
+    } catch (error) {
+      if (error.response?.status === 429) {
+        const retry = error.response.headers['retry-after'] || '60';
+        setErro(`Muitas tentativas. Tente novamente em ${retry}s.`);
+      } else if (error.response?.status === 400) {
+        setErro('Alguns campos estão inválidos. Volte e revise.');
+      } else if (!error.response) {
+        setErro('Não foi possível contatar o servidor.');
+      } else {
+        setErro('Erro inesperado ao enviar. Tente novamente.');
+      }
+    } finally {
+      setEnviando(false);
+    }
+  };
+
   return (
     <div style={estilos.conteiner}>
       <div style={estilos.cartao}>
-        <button style={estilos.botaoVoltar} onClick={aoEditar}>
+        <button style={estilos.botaoVoltar} onClick={aoEditar} disabled={enviando}>
           ← Voltar
         </button>
 
@@ -30,12 +56,14 @@ export default function ConfirmarEnvio({ dados, aoEditar, aoConfirmar }) {
           </p>
         </div>
 
+        {erro && <div style={estilos.caixaErro}>{erro}</div>}
+
         <div style={estilos.acoes}>
-          <button style={estilos.botaoSecundario} onClick={aoEditar}>
+          <button style={estilos.botaoSecundario} onClick={aoEditar} disabled={enviando}>
             Editar
           </button>
-          <button style={estilos.botaoPrimario} onClick={aoConfirmar}>
-            Confirmar Envio
+          <button style={estilos.botaoPrimario} onClick={tratarConfirmar} disabled={enviando}>
+            {enviando ? 'Enviando...' : 'Confirmar Envio'}
           </button>
         </div>
       </div>
@@ -123,6 +151,14 @@ const estilos = {
   textoAlerta: {
     fontSize: 13,
     color: '#667085'
+  },
+  caixaErro: {
+    background: '#FDECEC',
+    border: '1px solid #F5B7B7',
+    color: '#A02020',
+    padding: '10px 14px',
+    borderRadius: 8,
+    fontSize: 13
   },
   acoes: {
     display: 'flex',

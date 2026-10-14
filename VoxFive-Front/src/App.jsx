@@ -1,25 +1,42 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { AuthProvider, useAuth } from './auth/AuthContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import MeusFeedbacks from './pages/MeusFeedbacks';
 import NovoFeedback from './pages/NovoFeedback';
 import ConfirmarEnvio from './pages/ConfirmarEnvio';
-
-const dadosIniciais = [
-  { id: 1, categoria: 'Suporte', mensagem: 'Dificuldade no acesso à conta.', status: 'Em análise', data: '25/05/2026' },
-  { id: 2, categoria: 'Sistema', mensagem: 'Lentidão durante a geração de relatórios.', status: 'Respondido', resposta: 'Identificamos a lentidão e otimizamos o servidor.', data: '20/05/2026' },
-  { id: 3, categoria: 'Atendimento', mensagem: 'Ótimo atendimento do suporte via chat.', status: 'Respondido', resposta: 'Agradecemos o elogio! Estamos sempre à disposição.', data: '15/05/2026' },
-  { id: 4, categoria: 'Funcionalidade', mensagem: 'Sugestão de inclusão de gráfico exportável.', status: 'Em análise', data: '10/05/2026' },
-];
+import { feedbacksApi } from './api/endpoints';
+import { toInternalFeedback } from './api/mappers';
 
 export default function App() {
-  const [paginaAtual, setPaginaAtual] = useState('login');
-  const [feedbacks, setFeedbacks] = useState(dadosIniciais);
+  return (
+    <AuthProvider>
+      <ConteudoApp />
+    </AuthProvider>
+  );
+}
+
+function ConteudoApp() {
+  const { autenticado, usuario, logout } = useAuth();
+  const [paginaAtual, setPaginaAtual] = useState('feedbacks');
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [carregando, setCarregando] = useState(false);
+  const [erroGlobal, setErroGlobal] = useState('');
   const [rascunhoFeedback, setRascunhoFeedback] = useState(null);
 
-  const tratarSucessoLogin = () => {
-    setPaginaAtual('feedbacks');
-  };
+  useEffect(() => {
+    if (!autenticado) {
+      setFeedbacks([]);
+      return;
+    }
+    setCarregando(true);
+    setErroGlobal('');
+    feedbacksApi
+      .listMine()
+      .then(({ data }) => setFeedbacks(data.map(toInternalFeedback)))
+      .catch(() => setErroGlobal('Não foi possível carregar seus feedbacks.'))
+      .finally(() => setCarregando(false));
+  }, [autenticado]);
 
   const tratarIniciarNovoFeedback = () => {
     setPaginaAtual('novo');
@@ -30,56 +47,66 @@ export default function App() {
     setPaginaAtual('confirmar');
   };
 
-  const tratarConfirmarEnvio = () => {
-    const novoItem = {
-      id: Date.now(),
-      categoria: rascunhoFeedback.categoria,
-      mensagem: rascunhoFeedback.descricao,
-      status: 'Em análise',
-      data: new Date().toLocaleDateString('pt-BR')
-    };
-
-    setFeedbacks([novoItem, ...feedbacks]);
+  const tratarConfirmarEnvio = async () => {
+    const { data } = await feedbacksApi.create({
+      type: rascunhoFeedback.categoria,
+      message: rascunhoFeedback.descricao,
+    });
+    setFeedbacks([toInternalFeedback(data), ...feedbacks]);
     setRascunhoFeedback(null);
     setPaginaAtual('feedbacks');
   };
 
+  if (!autenticado) {
+    return <Login />;
+  }
+
   return (
     <div>
       <div style={estilos.barraNavegacao}>
-        <span style={{ fontSize: 12, fontWeight: 'bold' }}>Navegação de Teste:</span>
-        <button style={estilos.botaoNavegacao} onClick={() => setPaginaAtual('login')}>Login</button>
-        <button style={estilos.botaoNavegacao} onClick={() => setPaginaAtual('feedbacks')}>Meus Feedbacks ({feedbacks.length})</button>
-        <button style={estilos.botaoNavegacao} onClick={() => setPaginaAtual('dashboard')}>Dashboard</button>
+        <span style={{ fontSize: 12, fontWeight: 'bold' }}>
+          Logado como: {usuario.username} ({usuario.role})
+        </span>
+        <button style={estilos.botaoNavegacao} onClick={() => setPaginaAtual('feedbacks')}>
+          Meus Feedbacks ({feedbacks.length})
+        </button>
+        <button style={estilos.botaoNavegacao} onClick={() => setPaginaAtual('dashboard')}>
+          Dashboard
+        </button>
+        <button
+          style={{ ...estilos.botaoNavegacao, background: '#7A2E2E' }}
+          onClick={logout}
+        >
+          Sair
+        </button>
       </div>
 
-      {paginaAtual === 'login' && (
-        <Login aoSucessoLogin={tratarSucessoLogin} />
-      )}
+      {erroGlobal && <div style={estilos.aviso}>{erroGlobal}</div>}
 
       {paginaAtual === 'dashboard' && (
         <Dashboard feedbacks={feedbacks} aoNavegar={setPaginaAtual} />
       )}
 
       {paginaAtual === 'feedbacks' && (
-        <MeusFeedbacks 
-          feedbacks={feedbacks} 
-          aoNovoFeedback={tratarIniciarNovoFeedback} 
+        <MeusFeedbacks
+          feedbacks={feedbacks}
+          carregando={carregando}
+          aoNovoFeedback={tratarIniciarNovoFeedback}
         />
       )}
 
       {paginaAtual === 'novo' && (
-        <NovoFeedback 
-          aoContinuar={tratarContinuarFeedback} 
-          aoVoltar={() => setPaginaAtual('feedbacks')} 
+        <NovoFeedback
+          aoContinuar={tratarContinuarFeedback}
+          aoVoltar={() => setPaginaAtual('feedbacks')}
         />
       )}
 
       {paginaAtual === 'confirmar' && (
-        <ConfirmarEnvio 
-          dados={rascunhoFeedback} 
-          aoEditar={() => setPaginaAtual('novo')} 
-          aoConfirmar={tratarConfirmarEnvio} 
+        <ConfirmarEnvio
+          dados={rascunhoFeedback}
+          aoEditar={() => setPaginaAtual('novo')}
+          aoConfirmar={tratarConfirmarEnvio}
         />
       )}
     </div>
@@ -100,5 +127,11 @@ const estilos = {
     fontSize: 12,
     background: '#2D5128',
     color: '#FFFFFF'
+  },
+  aviso: {
+    background: '#FDECEC',
+    color: '#A02020',
+    padding: '10px 20px',
+    fontSize: 13
   }
 };

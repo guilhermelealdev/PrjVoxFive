@@ -1,17 +1,35 @@
 import { useState } from 'react';
+import { useAuth } from '../auth/AuthContext';
 import ModalEsqueciSenha from '../components/ModalEsqueciSenha';
 import ModalSolicitarAcesso from '../components/ModalSolicitarAcesso';
 
-export default function Login({ aoSucessoLogin }) {
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
+export default function Login() {
+  const { login } = useAuth();
+  const [username, setUsername] = useState('');
   const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
   const [tipoModal, setTipoModal] = useState(null);
 
-  const tratarEnvio = (e) => {
+  const tratarEnvio = async (e) => {
     e.preventDefault();
-    if (aoSucessoLogin) {
-      aoSucessoLogin({ nome, email });
+    setErro('');
+    setCarregando(true);
+    try {
+      await login(username, senha);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        setErro('Usuário ou senha inválidos.');
+      } else if (error.response?.status === 429) {
+        const retry = error.response.headers['retry-after'] || '60';
+        setErro(`Muitas tentativas. Tente novamente em ${retry}s.`);
+      } else if (!error.response) {
+        setErro('Não foi possível contatar o servidor.');
+      } else {
+        setErro('Erro inesperado. Tente novamente.');
+      }
+    } finally {
+      setCarregando(false);
     }
   };
 
@@ -21,62 +39,55 @@ export default function Login({ aoSucessoLogin }) {
         <div style={estilos.cabecalho}>
           <div style={estilos.etiqueta}>VoxFive</div>
           <h2 style={estilos.titulo}>Acessar Conta</h2>
-          <p style={estilos.subtitulo}>Insira seus dados para continuar</p>
+          <p style={estilos.subtitulo}>Insira suas credenciais para continuar</p>
         </div>
 
         <form onSubmit={tratarEnvio} style={estilos.formulario}>
           <div style={estilos.grupoCampo}>
-            <label>Nome completo</label>
-            <input 
-              type="text" 
-              placeholder="Digite seu nome" 
-              value={nome} 
-              onChange={(e) => setNome(e.target.value)} 
-              required 
-            />
-          </div>
-
-          <div style={estilos.grupoCampo}>
-            <label>E-mail</label>
-            <input 
-              type="email" 
-              placeholder="Digite seu e-mail" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              required 
+            <label>Usuário</label>
+            <input
+              type="text"
+              placeholder="Digite seu usuário"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+              required
             />
           </div>
 
           <div style={estilos.grupoCampo}>
             <div style={estilos.linhaRotulo}>
               <label style={{ margin: 0 }}>Senha</label>
-              <button 
-                type="button" 
-                onClick={() => setTipoModal('esqueci')} 
+              <button
+                type="button"
+                onClick={() => setTipoModal('esqueci')}
                 style={estilos.botaoEsqueci}
               >
                 Esqueci minha senha
               </button>
             </div>
-            <input 
-              type="password" 
-              placeholder="Digite sua senha" 
-              value={senha} 
-              onChange={(e) => setSenha(e.target.value)} 
-              required 
+            <input
+              type="password"
+              placeholder="Digite sua senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              autoComplete="current-password"
+              required
             />
           </div>
 
-          <button type="submit" style={estilos.botaoPrimario}>
-            Entrar no Sistema
+          {erro && <div style={estilos.caixaErro}>{erro}</div>}
+
+          <button type="submit" style={estilos.botaoPrimario} disabled={carregando}>
+            {carregando ? 'Entrando...' : 'Entrar no Sistema'}
           </button>
         </form>
 
         <div style={estilos.rodape}>
           <span>Não tem uma conta?</span>
-          <button 
-            type="button" 
-            onClick={() => setTipoModal('solicitar')} 
+          <button
+            type="button"
+            onClick={() => setTipoModal('solicitar')}
             style={estilos.botaoRegistro}
           >
             Solicite acesso
@@ -159,6 +170,14 @@ const estilos = {
     color: '#FFFFFF',
     fontSize: 15,
     boxShadow: '0 4px 12px rgba(20, 44, 20, 0.25)'
+  },
+  caixaErro: {
+    background: '#FDECEC',
+    border: '1px solid #F5B7B7',
+    color: '#A02020',
+    padding: '10px 14px',
+    borderRadius: 8,
+    fontSize: 13
   },
   rodape: {
     marginTop: 28,

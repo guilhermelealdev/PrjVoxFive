@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import ModalDetalhesFeedback from '../components/ModalDetalhesFeedback';
 
-export default function MeusFeedbacks({ feedbacks = [], aoNovoFeedback }) {
+export default function MeusFeedbacks({ feedbacks = [], carregando = false, aoNovoFeedback }) {
   const [aba, setAba] = useState('Todos');
   const [busca, setBusca] = useState('');
   const [feedbackSelecionado, setFeedbackSelecionado] = useState(null);
 
-  const filtrados = feedbacks.filter(f => {
-    const bateStatus = 
-      aba === 'Todos' ? true :
-      aba === 'Em análise' ? f.status === 'Em análise' :
-      f.status === 'Respondido';
+  const filtrados = feedbacks.filter((f) => {
+    const bateStatus =
+      aba === 'Todos'
+        ? true
+        : aba === 'Em análise'
+        ? f.status === 'Em análise'
+        : f.status === 'Respondido';
 
-    const bateBusca = 
-      f.categoria.toLowerCase().includes(busca.toLowerCase()) || 
-      f.mensagem.toLowerCase().includes(busca.toLowerCase());
+    const termo = busca.toLowerCase();
+    const bateBusca =
+      f.categoria.toLowerCase().includes(termo) ||
+      f.mensagem.toLowerCase().includes(termo);
 
     return bateStatus && bateBusca;
   });
@@ -28,18 +31,18 @@ export default function MeusFeedbacks({ feedbacks = [], aoNovoFeedback }) {
         </div>
 
         <div style={estilos.conteinerBusca}>
-          <input 
-            type="text" 
-            placeholder="Pesquisar por categoria" 
-            value={busca} 
-            onChange={(e) => setBusca(e.target.value)} 
+          <input
+            type="text"
+            placeholder="Pesquisar por categoria ou mensagem"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
           />
         </div>
 
         <div style={estilos.abas}>
-          {['Todos', 'Em análise', 'Respondidos'].map(a => (
-            <button 
-              key={a} 
+          {['Todos', 'Em análise', 'Respondidos'].map((a) => (
+            <button
+              key={a}
               style={aba === a ? estilos.abaAtiva : estilos.aba}
               onClick={() => setAba(a)}
             >
@@ -49,14 +52,18 @@ export default function MeusFeedbacks({ feedbacks = [], aoNovoFeedback }) {
         </div>
 
         <div style={estilos.lista}>
-          {filtrados.length === 0 ? (
+          {carregando ? (
+            <div style={estilos.caixaVazia}>
+              <p>Carregando seus feedbacks...</p>
+            </div>
+          ) : filtrados.length === 0 ? (
             <div style={estilos.caixaVazia}>
               <p>Nenhum feedback encontrado.</p>
             </div>
           ) : (
-            filtrados.map(item => (
-              <div 
-                key={item.id} 
+            filtrados.map((item) => (
+              <div
+                key={item.id}
                 style={estilos.cartaoItem}
                 onClick={() => setFeedbackSelecionado(item)}
               >
@@ -65,7 +72,13 @@ export default function MeusFeedbacks({ feedbacks = [], aoNovoFeedback }) {
                   <p style={estilos.mensagemItem}>{item.mensagem}</p>
                 </div>
                 <div style={estilos.itemLateral}>
-                  <span style={item.status === 'Respondido' ? estilos.etiquetaSucesso : estilos.etiquetaPendente}>
+                  <span
+                    style={
+                      item.status === 'Respondido'
+                        ? estilos.etiquetaSucesso
+                        : estilos.etiquetaPendente
+                    }
+                  >
                     {item.status}
                   </span>
                   <span style={estilos.dataItem}>{item.data}</span>
@@ -81,9 +94,9 @@ export default function MeusFeedbacks({ feedbacks = [], aoNovoFeedback }) {
       </div>
 
       {feedbackSelecionado && (
-        <ModalDetalhesFeedback 
-          feedback={feedbackSelecionado} 
-          aoFechar={() => setFeedbackSelecionado(null)} 
+        <ModalDetalhesFeedback
+          feedback={feedbackSelecionado}
+          aoFechar={() => setFeedbackSelecionado(null)}
         />
       )}
     </div>
