@@ -18,6 +18,10 @@ import com.guilhermef.br.responseDtos.FeedbackResponseDto;
 @Service
 public class FeedbackService {
 
+	private static final String ADMIN_ROLE = "ADMIN";
+	private static final String STATUS_UNDER_REVIEW = "Em análise";
+	private static final String STATUS_ANSWERED = "Respondido";
+
 	private final FeedbackRepository feedbackRepository;
 	private final UserRepository userRepository;
 	private final FeedbackMapper feedbackMapper;
@@ -44,11 +48,11 @@ public class FeedbackService {
 	}
 
 	@Transactional
-	public FeedbackResponseDto save(FeedbackRequestDto dto) {
-		User owner = resolveUser(dto.userId());
+	public FeedbackResponseDto save(FeedbackRequestDto dto, String authenticatedUsername) {
+		User owner = resolveOwner(dto.userId(), authenticatedUsername);
 		Feedback feedback = feedbackMapper.toFeedback(dto);
 		feedback.setUser(owner);
-		feedback.setStatus("Em análise");
+		feedback.setStatus(STATUS_UNDER_REVIEW);
 		Feedback savedFeedback = feedbackRepository.save(feedback);
 		return feedbackMapper.toFeedbackResponseDto(savedFeedback);
 	}
@@ -81,12 +85,25 @@ public class FeedbackService {
 	public FeedbackResponseDto answer(Long id, FeedbackAnswerRequestDto dto) {
 		Feedback feedback = findOrThrow(id);
 		feedback.setResponse(dto.getAnswer());
+		feedback.setStatus(STATUS_ANSWERED);
 		Feedback updatedFeedback = feedbackRepository.save(feedback);
 		return feedbackMapper.toFeedbackResponseDto(updatedFeedback);
 	}
 
-	private User resolveUser(Long userId) {
-		return userRepository.findById(userId)
+	private User resolveOwner(Long requestedUserId, String authenticatedUsername) {
+		User authenticated = userRepository.findByUsername(authenticatedUsername)
+				.orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found."));
+
+		boolean isAdmin = ADMIN_ROLE.equals(authenticated.getRole());
+		if (!isAdmin) {
+			return authenticated;
+		}
+
+		if (requestedUserId == null) {
+			return authenticated;
+		}
+
+		return userRepository.findById(requestedUserId)
 				.orElseThrow(() -> new ResourceNotFoundException("User not found."));
 	}
 

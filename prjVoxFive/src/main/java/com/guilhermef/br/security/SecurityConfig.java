@@ -19,6 +19,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.guilhermef.br.honeypot.HoneypotFilter;
+import com.guilhermef.br.honeypot.SuspiciousIpRegistry;
+import com.guilhermef.br.ratelimit.InMemoryRequestRateLimiter;
+import com.guilhermef.br.ratelimit.RateLimitFilter;
+
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
@@ -27,21 +33,37 @@ public class SecurityConfig {
 	private final RestAuthenticationEntryPoint authenticationEntryPoint;
 	private final RestAccessDeniedHandler accessDeniedHandler;
 	private final CorsProperties corsProperties;
+	private final InMemoryRequestRateLimiter rateLimiter;
+	private final RateLimitProperties rateLimitProperties;
+	private final SuspiciousIpRegistry suspiciousIpRegistry;
+	private final ObjectMapper objectMapper;
 
 	public SecurityConfig(
 			JwtTokenVerifier jwtTokenVerifier,
 			RestAuthenticationEntryPoint authenticationEntryPoint,
 			RestAccessDeniedHandler accessDeniedHandler,
-			CorsProperties corsProperties
+			CorsProperties corsProperties,
+			InMemoryRequestRateLimiter rateLimiter,
+			RateLimitProperties rateLimitProperties,
+			SuspiciousIpRegistry suspiciousIpRegistry,
+			ObjectMapper objectMapper
 	) {
 		this.jwtTokenVerifier = jwtTokenVerifier;
 		this.authenticationEntryPoint = authenticationEntryPoint;
 		this.accessDeniedHandler = accessDeniedHandler;
 		this.corsProperties = corsProperties;
+		this.rateLimiter = rateLimiter;
+		this.rateLimitProperties = rateLimitProperties;
+		this.suspiciousIpRegistry = suspiciousIpRegistry;
+		this.objectMapper = objectMapper;
 	}
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		HoneypotFilter honeypotFilter = new HoneypotFilter(suspiciousIpRegistry);
+		RateLimitFilter rateLimitFilter = new RateLimitFilter(rateLimiter, rateLimitProperties, objectMapper);
+		JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenVerifier);
+
 		http
 				.csrf(AbstractHttpConfigurer::disable)
 				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -54,6 +76,7 @@ public class SecurityConfig {
 						.requestMatchers("/auth/login", "/auth/refresh").permitAll()
 						.requestMatchers(HttpMethod.POST, "/users").permitAll()
 						.requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/info").permitAll()
+						.requestMatchers(HttpMethod.GET, "/feedbacks/me").authenticated()
 						.requestMatchers("/users/admin", "/users/admin/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/feedbacks").authenticated()
 						.requestMatchers(HttpMethod.PUT, "/feedbacks/admin/**").hasRole("ADMIN")
@@ -79,7 +102,9 @@ public class SecurityConfig {
 							.maxAgeInSeconds(31536000));
 					headers.contentTypeOptions(Customizer.withDefaults());
 				})
-				.addFilterBefore(new JwtAuthenticationFilter(jwtTokenVerifier), UsernamePasswordAuthenticationFilter.class);
+				.addFilterBefore(honeypotFilter, UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}

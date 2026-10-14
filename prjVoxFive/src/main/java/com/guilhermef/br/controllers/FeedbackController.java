@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,12 @@ public class FeedbackController {
 		this.feedbackService = feedbackService;
 	}
 
+	@GetMapping("/me")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<List<FeedbackResponseDto>> findMyFeedbacks(Authentication authentication) {
+		return ResponseEntity.ok(feedbackService.findByUsername(authentication.getName()));
+	}
+
 	@GetMapping("/name")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<List<FeedbackResponseDto>> findByUsername(@RequestParam String username) {
@@ -52,8 +59,8 @@ public class FeedbackController {
 
 	@PostMapping
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<FeedbackResponseDto> save(@Valid @RequestBody FeedbackRequestDto dto) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(feedbackService.save(dto));
+	public ResponseEntity<FeedbackResponseDto> save(@Valid @RequestBody FeedbackRequestDto dto, Authentication authentication) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(feedbackService.save(dto, authentication.getName()));
 	}
 
 	@GetMapping("/id")
