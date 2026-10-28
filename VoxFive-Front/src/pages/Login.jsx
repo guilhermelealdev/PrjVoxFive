@@ -1,197 +1,58 @@
 import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import ModalEsqueciSenha from '../components/ModalEsqueciSenha';
-import ModalSolicitarAcesso from '../components/ModalSolicitarAcesso';
 
 export default function Login() {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
-  const [tipoModal, setTipoModal] = useState(null);
 
-  const tratarEnvio = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (carregando) return;
+    
     setErro('');
     setCarregando(true);
+    
     try {
       await login(username, senha);
+      navigate('/ocorrencias');
     } catch (error) {
-      if (error.response?.status === 401) {
-        setErro('Usuário ou senha inválidos.');
-      } else if (error.response?.status === 429) {
-        const retry = error.response.headers['retry-after'] || '60';
-        setErro(`Muitas tentativas. Tente novamente em ${retry}s.`);
-      } else if (!error.response) {
-        setErro('Não foi possível contatar o servidor.');
-      } else {
-        setErro('Erro inesperado. Tente novamente.');
-      }
+      if (error.response?.status === 401) setErro('Usuário ou senha inválidos.');
+      else if (error.response?.status === 429) setErro('Muitas tentativas. Aguarde um minuto.');
+      else setErro('Erro ao conectar. Tente novamente.');
     } finally {
       setCarregando(false);
     }
   };
 
   return (
-    <div style={estilos.conteiner}>
-      <div style={estilos.cartao}>
-        <div style={estilos.cabecalho}>
-          <div style={estilos.etiqueta}>VoxFive</div>
-          <h2 style={estilos.titulo}>Acessar Conta</h2>
-          <p style={estilos.subtitulo}>Insira suas credenciais para continuar</p>
-        </div>
-
-        <form onSubmit={tratarEnvio} style={estilos.formulario}>
-          <div style={estilos.grupoCampo}>
-            <label>Usuário</label>
-            <input
-              type="text"
-              placeholder="Digite seu usuário"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
-              required
-            />
+    <div style={{ display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, #142C14, #2D5128)' }}>
+      <div style={{ background: '#fff', padding: 40, borderRadius: 16, width: '100%', maxWidth: 400, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+        <h2 style={{ color: '#142C14', marginBottom: 8, textAlign: 'center', fontSize: 24, fontWeight: 800 }}>VoxSeven</h2>
+        <p style={{ color: '#667085', textAlign: 'center', marginBottom: 24, fontSize: 14 }}>Acesse sua conta para continuar</p>
+        
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <input type="text" placeholder="Usuário" value={username} onChange={e => setUsername(e.target.value)} disabled={carregando} required />
+          <input type="password" placeholder="Senha" value={senha} onChange={e => setSenha(e.target.value)} disabled={carregando} required />
+          
+          <div style={{ minHeight: 40, display: 'flex', alignItems: 'center' }}>
+            {erro && <p style={{ color: '#A02020', fontSize: 13, background: '#FDECEC', padding: '8px 12px', borderRadius: 6, width: '100%', margin: 0, border: '1px solid #F5B7B7' }}>{erro}</p>}
           </div>
 
-          <div style={estilos.grupoCampo}>
-            <div style={estilos.linhaRotulo}>
-              <label style={{ margin: 0 }}>Senha</label>
-              <button
-                type="button"
-                onClick={() => setTipoModal('esqueci')}
-                style={estilos.botaoEsqueci}
-              >
-                Esqueci minha senha
-              </button>
-            </div>
-            <input
-              type="password"
-              placeholder="Digite sua senha"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-          </div>
-
-          {erro && <div style={estilos.caixaErro}>{erro}</div>}
-
-          <button type="submit" style={estilos.botaoPrimario} disabled={carregando}>
+          <button type="submit" disabled={carregando} style={{ padding: 14, background: carregando ? '#8DA750' : '#142C14', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 'bold', transition: 'background 0.2s' }}>
             {carregando ? 'Entrando...' : 'Entrar no Sistema'}
           </button>
         </form>
 
-        <div style={estilos.rodape}>
-          <span>Não tem uma conta?</span>
-          <button
-            type="button"
-            onClick={() => setTipoModal('solicitar')}
-            style={estilos.botaoRegistro}
-          >
-            Solicite acesso
-          </button>
+        <div style={{ marginTop: 24, textAlign: 'center', fontSize: 14 }}>
+          <span style={{ color: '#667085' }}>Não tem uma conta? </span>
+          <Link to="/cadastro" style={{ color: '#2D5128', fontWeight: 'bold', textDecoration: 'none' }}>Cadastre-se</Link>
         </div>
       </div>
-
-      {tipoModal === 'esqueci' && <ModalEsqueciSenha aoFechar={() => setTipoModal(null)} />}
-      {tipoModal === 'solicitar' && <ModalSolicitarAcesso aoFechar={() => setTipoModal(null)} />}
     </div>
   );
 }
-
-const estilos = {
-  conteiner: {
-    display: 'flex',
-    minHeight: '100vh',
-    justifyContent: 'center',
-    alignItems: 'center',
-    background: 'linear-gradient(135deg, #142C14 0%, #2D5128 100%)',
-    padding: 24
-  },
-  cartao: {
-    background: '#FFFFFF',
-    padding: '44px 36px',
-    borderRadius: 20,
-    width: '100%',
-    maxWidth: 420,
-    boxShadow: '0 24px 48px rgba(0, 0, 0, 0.22)'
-  },
-  cabecalho: {
-    textAlign: 'center',
-    marginBottom: 32
-  },
-  etiqueta: {
-    display: 'inline-block',
-    background: '#E4EB9C',
-    color: '#142C14',
-    fontSize: 12,
-    fontWeight: 'bold',
-    padding: '6px 16px',
-    borderRadius: 20,
-    marginBottom: 16
-  },
-  titulo: {
-    color: '#142C14',
-    fontSize: 24,
-    fontWeight: 700
-  },
-  subtitulo: {
-    color: '#667085',
-    fontSize: 14,
-    marginTop: 6
-  },
-  formulario: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 20
-  },
-  grupoCampo: {
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  linhaRotulo: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6
-  },
-  botaoEsqueci: {
-    background: 'none',
-    fontSize: 12,
-    color: '#537B2F',
-    fontWeight: 600
-  },
-  botaoPrimario: {
-    marginTop: 12,
-    padding: 14,
-    background: '#142C14',
-    color: '#FFFFFF',
-    fontSize: 15,
-    boxShadow: '0 4px 12px rgba(20, 44, 20, 0.25)'
-  },
-  caixaErro: {
-    background: '#FDECEC',
-    border: '1px solid #F5B7B7',
-    color: '#A02020',
-    padding: '10px 14px',
-    borderRadius: 8,
-    fontSize: 13
-  },
-  rodape: {
-    marginTop: 28,
-    textAlign: 'center',
-    fontSize: 14,
-    color: '#667085',
-    display: 'flex',
-    gap: 8,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  botaoRegistro: {
-    background: 'none',
-    color: '#2D5128',
-    fontWeight: 700
-  }
-};

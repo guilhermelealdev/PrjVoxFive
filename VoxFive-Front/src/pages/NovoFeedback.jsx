@@ -1,19 +1,32 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { feedbacksApi } from '../api/endpoints';
 
-export default function NovoFeedback({ aoContinuar, aoVoltar }) {
+export default function NovoFeedback() {
+  const navigate = useNavigate();
   const [categoria, setCategoria] = useState('');
   const [descricao, setDescricao] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
-  const tratarProximo = (e) => {
+  const tratarProximo = async (e) => {
     e.preventDefault();
     if (!categoria || !descricao) return alert('Preencha todos os campos!');
-    aoContinuar({ categoria, descricao });
+    
+    setEnviando(true);
+    try {
+      await feedbacksApi.criar({ type: categoria, message: descricao });
+      navigate('/ocorrencias');
+    } catch (error) {
+      alert('Erro ao enviar feedback. Tente novamente.');
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
     <div style={estilos.conteiner}>
       <div style={estilos.cartao}>
-        <button style={estilos.botaoVoltar} onClick={aoVoltar}>
+        <button style={estilos.botaoVoltar} onClick={() => navigate('/ocorrencias')} disabled={enviando}>
           ← Voltar
         </button>
 
@@ -47,8 +60,8 @@ export default function NovoFeedback({ aoContinuar, aoVoltar }) {
             />
           </div>
 
-          <button type="submit" style={estilos.botaoEnviar}>
-            Continuar
+          <button type="submit" style={estilos.botaoEnviar} disabled={enviando}>
+            {enviando ? 'Enviando...' : 'Enviar Feedback'}
           </button>
         </form>
       </div>
@@ -78,7 +91,9 @@ const estilos = {
     color: '#2D5128',
     fontSize: 14,
     fontWeight: 600,
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
+    border: 'none',
+    cursor: 'pointer'
   },
   cabecalho: {
     textAlign: 'center',
@@ -110,6 +125,10 @@ const estilos = {
     color: '#FFFFFF',
     padding: 14,
     fontSize: 15,
-    marginTop: 8
+    marginTop: 8,
+    border: 'none',
+    borderRadius: 8,
+    fontWeight: 600,
+    cursor: 'pointer'
   }
 };

@@ -1,39 +1,58 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import ModalDetalhesFeedback from '../components/ModalDetalhesFeedback';
+import { feedbacksApi } from '../api/endpoints';
+import { useAuth } from '../auth/AuthContext';
+import { formatarData } from '../api/mappers';
 
-export default function MeusFeedbacks({ feedbacks = [], carregando = false, aoNovoFeedback }) {
+export default function MeusFeedbacks() {
+  const { usuario } = useAuth();
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [carregando, setCarregando] = useState(true);
   const [aba, setAba] = useState('Todos');
   const [busca, setBusca] = useState('');
   const [feedbackSelecionado, setFeedbackSelecionado] = useState(null);
 
+  const carregarDados = () => {
+    setCarregando(true);
+    const promise = usuario.role === 'ADMIN' 
+      ? feedbacksApi.listarTodos() 
+      : feedbacksApi.listarMeus();
+
+    promise
+      .then(res => setFeedbacks(res.data))
+      .catch(() => alert('Erro ao carregar feedbacks'))
+      .finally(() => setCarregando(false));
+  };
+
+  useEffect(() => {
+    carregarDados();
+  }, []);
+
   const filtrados = feedbacks.filter((f) => {
-    const bateStatus =
-      aba === 'Todos'
-        ? true
-        : aba === 'Em análise'
-        ? f.status === 'Em análise'
-        : f.status === 'Respondido';
+    const statusMatch = 
+      aba === 'Todos' ? true :
+      aba === 'Em análise' ? f.status === 'Em análise' :
+      f.status === 'Respondido';
 
     const termo = busca.toLowerCase();
-    const bateBusca =
-      f.categoria.toLowerCase().includes(termo) ||
-      f.mensagem.toLowerCase().includes(termo);
+    const buscaMatch = f.type.toLowerCase().includes(termo) || f.message.toLowerCase().includes(termo);
 
-    return bateStatus && bateBusca;
+    return statusMatch && buscaMatch;
   });
 
   return (
     <div style={estilos.conteiner}>
       <div style={estilos.cartao}>
         <div style={estilos.cabecalho}>
-          <h2 style={estilos.titulo}>MEUS FEEDBACKS</h2>
-          <p style={estilos.subtitulo}>Gerencie e acompanhe o status dos seus envios</p>
+          <h2 style={estilos.titulo}>{usuario.role === 'ADMIN' ? 'TODOS OS FEEDBACKS' : 'MEUS FEEDBACKS'}</h2>
+          <p style={estilos.subtitulo}>Gerencie, filtre e acompanhe as solicitações</p>
         </div>
 
         <div style={estilos.conteinerBusca}>
           <input
             type="text"
-            placeholder="Pesquisar por categoria ou mensagem"
+            placeholder="Pesquisar por categoria ou mensagem..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
@@ -53,50 +72,39 @@ export default function MeusFeedbacks({ feedbacks = [], carregando = false, aoNo
 
         <div style={estilos.lista}>
           {carregando ? (
-            <div style={estilos.caixaVazia}>
-              <p>Carregando seus feedbacks...</p>
-            </div>
+            <div style={estilos.caixaVazia}><p>Carregando...</p></div>
           ) : filtrados.length === 0 ? (
-            <div style={estilos.caixaVazia}>
-              <p>Nenhum feedback encontrado.</p>
-            </div>
+            <div style={estilos.caixaVazia}><p>Nenhum feedback encontrado.</p></div>
           ) : (
             filtrados.map((item) => (
-              <div
-                key={item.id}
-                style={estilos.cartaoItem}
-                onClick={() => setFeedbackSelecionado(item)}
-              >
+              <div key={item.id} style={estilos.cartaoItem} onClick={() => setFeedbackSelecionado(item)}>
                 <div style={estilos.itemPrincipal}>
-                  <strong style={estilos.categoriaItem}>{item.categoria}</strong>
-                  <p style={estilos.mensagemItem}>{item.mensagem}</p>
+                  <strong style={estilos.categoriaItem}>{item.type}</strong>
+                  <p style={estilos.mensagemItem}>{item.message}</p>
                 </div>
                 <div style={estilos.itemLateral}>
-                  <span
-                    style={
-                      item.status === 'Respondido'
-                        ? estilos.etiquetaSucesso
-                        : estilos.etiquetaPendente
-                    }
-                  >
+                  <span style={item.status === 'Respondido' ? estilos.etiquetaSucesso : estilos.etiquetaPendente}>
                     {item.status}
                   </span>
-                  <span style={estilos.dataItem}>{item.data}</span>
+                  <span style={estilos.dataItem}>{formatarData(item.creation)}</span>
                 </div>
               </div>
             ))
           )}
         </div>
 
-        <button style={estilos.botaoNovo} onClick={aoNovoFeedback}>
-          + Novo feedback
-        </button>
+        {usuario.role !== 'ADMIN' && (
+          <Link to="/ocorrencias/nova" style={{ textDecoration: 'none' }}>
+            <button style={estilos.botaoNovo}>+ Novo feedback</button>
+          </Link>
+        )}
       </div>
 
       {feedbackSelecionado && (
         <ModalDetalhesFeedback
           feedback={feedbackSelecionado}
           aoFechar={() => setFeedbackSelecionado(null)}
+          aoAtualizar={carregarDados}
         />
       )}
     </div>
@@ -114,7 +122,7 @@ const estilos = {
     padding: 36,
     borderRadius: 20,
     width: '100%',
-    maxWidth: 580,
+    maxWidth: 640,
     boxShadow: '0 12px 32px rgba(0, 0, 0, 0.06)',
     display: 'flex',
     flexDirection: 'column',
@@ -239,6 +247,10 @@ const estilos = {
     background: '#142C14',
     color: '#FFFFFF',
     fontSize: 15,
-    marginTop: 8
+    marginTop: 8,
+    border: 'none',
+    borderRadius: 10,
+    cursor: 'pointer',
+    fontWeight: 600
   }
 };

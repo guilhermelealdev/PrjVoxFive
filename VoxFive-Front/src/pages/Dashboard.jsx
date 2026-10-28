@@ -1,221 +1,112 @@
-export default function Dashboard({ feedbacks = [], aoNavegar }) {
+import { useEffect, useState } from 'react';
+import { feedbacksApi } from '../api/endpoints';
+import { formatarData } from '../api/mappers';
+
+export default function Dashboard() {
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    feedbacksApi.listarTodos()
+      .then(res => setFeedbacks(res.data))
+      .catch(() => alert('Erro ao carregar dados do dashboard'))
+      .finally(() => setCarregando(false));
+  }, []);
+
+  if (carregando) return <p style={{ textAlign: 'center', marginTop: 40 }}>Carregando métricas...</p>;
+
   const total = feedbacks.length;
-  const emAnalise = feedbacks.filter(f => f.status === 'Em análise').length;
+  const pendentes = feedbacks.filter(f => f.status === 'Em análise').length;
   const respondidos = feedbacks.filter(f => f.status === 'Respondido').length;
+  const taxaResolucao = total === 0 ? 0 : Math.round((respondidos / total) * 100);
 
   const categorias = ['Suporte', 'Sistema', 'Atendimento', 'Funcionalidade', 'Sugestão', 'Outros'];
+  const porCategoria = categorias
+    .map(cat => ({ nome: cat, qtd: feedbacks.filter(f => f.type === cat).length }))
+    .filter(c => c.qtd > 0)
+    .sort((a, b) => b.qtd - a.qtd); 
 
-  const contagemCategorias = categorias.map(cat => {
-    const qtd = feedbacks.filter(f => f.categoria === cat).length;
-    return { categoria: cat, qtd };
-  });
-
-  const maiorQtd = Math.max(...contagemCategorias.map(c => c.qtd), 1);
+  const recentes = [...feedbacks]
+    .sort((a, b) => new Date(b.creation) - new Date(a.creation))
+    .slice(0, 5);
 
   return (
-    <div style={estilos.conteiner}>
-      <aside style={estilos.barraLateral}>
-        <h3 style={estilos.tituloMarca}>VoxFive</h3>
-        <nav style={estilos.menuNavegacao}>
-          <p style={estilos.itemMenuAtivo}>Dashboard</p>
-          <p style={estilos.itemMenu} onClick={() => aoNavegar && aoNavegar('feedbacks')}>Feedbacks</p>
-        </nav>
-      </aside>
-
-      <main style={estilos.conteudoPrincipal}>
-        <div style={estilos.secaoCabecalho}>
-          <h2 style={estilos.tituloPagina}>DASHBOARD</h2>
-          <p style={estilos.subtituloPagina}>Acompanhe as estatísticas gerais em tempo real</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h2 style={{ color: '#142C14', fontSize: 24, marginBottom: 4, fontWeight: 700 }}>Visão Geral</h2>
+          <p style={{ color: '#667085', fontSize: 14 }}>Acompanhe o desempenho do atendimento.</p>
         </div>
-
-        <div style={estilos.gradeIndicadores}>
-          <div style={estilos.cartaoIndicador}>
-            <span style={estilos.rotuloIndicador}>Total de feedbacks</span>
-            <h1 style={estilos.valorIndicador}>{total}</h1>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+        <div style={{ background: '#fff', padding: 20, borderRadius: 12, border: '1px solid #E1E8E0', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+          <p style={{ fontSize: 13, color: '#667085', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Total Recebidos</p>
+          <h1 style={{ fontSize: 32, color: '#142C14', marginTop: 4, fontWeight: 700 }}>{total}</h1>
+        </div>
+        <div style={{ background: '#fff', padding: 20, borderRadius: 12, border: '1px solid #E1E8E0', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+          <p style={{ fontSize: 13, color: '#667085', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Pendentes</p>
+          <h1 style={{ fontSize: 32, color: '#D97706', marginTop: 4, fontWeight: 700 }}>{pendentes}</h1>
+        </div>
+        <div style={{ background: '#fff', padding: 20, borderRadius: 12, border: '1px solid #E1E8E0', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+          <p style={{ fontSize: 13, color: '#667085', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Respondidos</p>
+          <h1 style={{ fontSize: 32, color: '#059669', marginTop: 4, fontWeight: 700 }}>{respondidos}</h1>
+        </div>
+        <div style={{ background: '#fff', padding: 20, borderRadius: 12, border: '1px solid #E1E8E0', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontSize: 13, color: '#667085', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Taxa de Resolução</p>
+            <h1 style={{ fontSize: 32, color: '#142C14', marginTop: 4, fontWeight: 700 }}>{taxaResolucao}%</h1>
           </div>
-          <div style={estilos.cartaoIndicador}>
-            <span style={estilos.rotuloIndicador}>Em análise</span>
-            <h1 style={{ ...estilos.valorIndicador, color: '#537B2F' }}>{emAnalise}</h1>
-          </div>
-          <div style={estilos.cartaoIndicador}>
-            <span style={estilos.rotuloIndicador}>Respondidos</span>
-            <h1 style={{ ...estilos.valorIndicador, color: '#2D5128' }}>{respondidos}</h1>
+          <div style={{ width: 50, height: 50, borderRadius: '50%', background: `conic-gradient(#2D5128 ${taxaResolucao}%, #E1E8E0 ${taxaResolucao}%)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+             <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#fff' }}></div>
           </div>
         </div>
+      </div>
 
-        <div style={estilos.conteinerGrafico}>
-          <h3 style={estilos.tituloGrafico}>Feedbacks por Categoria</h3>
-
-          <div style={estilos.areaGrafico}>
-            {contagemCategorias.map(item => {
-              const alturaPercentual = (item.qtd / maiorQtd) * 100;
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        
+        <div style={{ background: '#fff', padding: 24, borderRadius: 12, border: '1px solid #E1E8E0', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+          <h3 style={{ color: '#142C14', fontSize: 16, marginBottom: 20, fontWeight: 700 }}>Volume por Categoria</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {porCategoria.length === 0 && <p style={{ color: '#667085', fontSize: 13 }}>Nenhum dado registrado.</p>}
+            {porCategoria.map(cat => {
+              const porcentagem = Math.round((cat.qtd / total) * 100);
               return (
-                <div key={item.categoria} style={estilos.grupoBarra}>
-                  <span style={estilos.valorBarra}>{item.qtd}</span>
-                  <div style={estilos.trilhoBarra}>
-                    <div 
-                      style={{
-                        ...estilos.preenchimentoBarra,
-                        height: `${Math.max(alturaPercentual, 6)}%`,
-                        background: item.qtd > 0 ? '#2D5128' : '#E0E7DE'
-                      }} 
-                    />
+                <div key={cat.nome}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#333' }}>
+                    <span>{cat.nome}</span>
+                    <span style={{ color: '#667085' }}>{cat.qtd} ({porcentagem}%)</span>
                   </div>
-                  <span style={estilos.rotuloBarra}>{item.categoria}</span>
+                  <div style={{ width: '100%', height: 8, background: '#F3F6F3', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ width: `${porcentagem}%`, height: '100%', background: '#2D5128', borderRadius: 4 }} />
+                  </div>
                 </div>
               );
             })}
           </div>
         </div>
-      </main>
+
+        <div style={{ background: '#fff', padding: 24, borderRadius: 12, border: '1px solid #E1E8E0', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+          <h3 style={{ color: '#142C14', fontSize: 16, marginBottom: 20, fontWeight: 700 }}>Últimas Atividades</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {recentes.length === 0 && <p style={{ color: '#667085', fontSize: 13 }}>Nenhuma atividade recente.</p>}
+            {recentes.map(r => (
+              <div key={r.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', paddingBottom: 12, borderBottom: '1px solid #F0F0F0' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.status === 'Respondido' ? '#059669' : '#D97706', marginTop: 6, flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <p style={{ margin: 0, fontSize: 13, color: '#142C14', fontWeight: 600 }}>{r.type}</p>
+                    <span style={{ fontSize: 11, color: '#999' }}>{formatarData(r.creation)}</span>
+                  </div>
+                  <p style={{ margin: '4px 0 0 0', fontSize: 13, color: '#667085', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 280 }}>{r.message}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }
-
-const estilos = {
-  conteiner: {
-    display: 'flex',
-    minHeight: '100vh'
-  },
-  barraLateral: {
-    width: 240,
-    background: '#142C14',
-    color: '#FFFFFF',
-    padding: '32px 24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 32
-  },
-  tituloMarca: {
-    color: '#E4EB9C',
-    fontSize: 22,
-    fontWeight: 700
-  },
-  menuNavegacao: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12
-  },
-  itemMenuAtivo: {
-    background: '#2D5128',
-    padding: '12px 16px',
-    borderRadius: 8,
-    cursor: 'pointer',
-    fontWeight: 600,
-    color: '#FFFFFF'
-  },
-  itemMenu: {
-    padding: '12px 16px',
-    cursor: 'pointer',
-    color: '#8DA750',
-    fontWeight: 500,
-    borderRadius: 8,
-    transition: 'background 0.2s'
-  },
-  conteudoPrincipal: {
-    flex: 1,
-    padding: '40px 48px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 32
-  },
-  secaoCabecalho: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6
-  },
-  tituloPagina: {
-    color: '#142C14',
-    fontSize: 26,
-    fontWeight: 700
-  },
-  subtituloPagina: {
-    color: '#667085',
-    fontSize: 14
-  },
-  gradeIndicadores: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: 24
-  },
-  cartaoIndicador: {
-    background: '#FFFFFF',
-    padding: 24,
-    borderRadius: 14,
-    borderLeft: '6px solid #537B2F',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12
-  },
-  rotuloIndicador: {
-    fontSize: 13,
-    color: '#667085',
-    fontWeight: 600
-  },
-  valorIndicador: {
-    fontSize: 36,
-    fontWeight: 700,
-    color: '#142C14'
-  },
-  conteinerGrafico: {
-    background: '#FFFFFF',
-    padding: 32,
-    borderRadius: 16,
-    border: '1px solid #E1E8E0',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 24
-  },
-  tituloGrafico: {
-    color: '#142C14',
-    fontSize: 18,
-    fontWeight: 700
-  },
-  areaGrafico: {
-    display: 'flex',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: 220,
-    gap: 16,
-    paddingTop: 20
-  },
-  grupoBarra: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    flex: 1,
-    height: '100%',
-    justifyContent: 'flex-end'
-  },
-  valorBarra: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#142C14',
-    marginBottom: 8
-  },
-  trilhoBarra: {
-    width: '100%',
-    maxWidth: 42,
-    height: 150,
-    background: '#FAFCFA',
-    borderRadius: 8,
-    display: 'flex',
-    alignItems: 'flex-end',
-    overflow: 'hidden',
-    border: '1px solid #E1E8E0'
-  },
-  preenchimentoBarra: {
-    width: '100%',
-    borderRadius: 6,
-    transition: 'height 0.4s ease'
-  },
-  rotuloBarra: {
-    fontSize: 12,
-    color: '#667085',
-    marginTop: 12,
-    textAlign: 'center',
-    fontWeight: 500
-  }
-};
