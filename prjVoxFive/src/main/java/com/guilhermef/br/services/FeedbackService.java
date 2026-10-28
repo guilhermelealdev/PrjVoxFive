@@ -1,5 +1,6 @@
 package com.guilhermef.br.services;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -47,6 +48,13 @@ public class FeedbackService {
 		return feedbackMapper.toFeedbackResponseDtoList(feedbackRepository.findByStatus(status));
 	}
 
+	@Transactional(readOnly = true)
+	public List<FeedbackResponseDto> search(LocalDateTime startDate, LocalDateTime endDate, String type, String status) {
+		String filterType = (type != null && type.isBlank()) ? null : type;
+		String filterStatus = (status != null && status.isBlank()) ? null : status;
+		return feedbackMapper.toFeedbackResponseDtoList(feedbackRepository.findByFilters(startDate, endDate, filterType, filterStatus));
+	}
+
 	@Transactional
 	public FeedbackResponseDto save(FeedbackRequestDto dto, String authenticatedUsername) {
 		User owner = resolveOwner(dto.userId(), authenticatedUsername);
@@ -82,10 +90,11 @@ public class FeedbackService {
 	}
 
 	@Transactional
-	public FeedbackResponseDto answer(Long id, FeedbackAnswerRequestDto dto) {
+	public FeedbackResponseDto answer(Long id, FeedbackAnswerRequestDto dto, String adminUsername) {
 		Feedback feedback = findOrThrow(id);
 		feedback.setResponse(dto.getAnswer());
 		feedback.setStatus(STATUS_ANSWERED);
+		feedback.setAnsweredBy(adminUsername);
 		Feedback updatedFeedback = feedbackRepository.save(feedback);
 		return feedbackMapper.toFeedbackResponseDto(updatedFeedback);
 	}
@@ -95,11 +104,7 @@ public class FeedbackService {
 				.orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found."));
 
 		boolean isAdmin = ADMIN_ROLE.equals(authenticated.getRole());
-		if (!isAdmin) {
-			return authenticated;
-		}
-
-		if (requestedUserId == null) {
+		if (!isAdmin || requestedUserId == null) {
 			return authenticated;
 		}
 

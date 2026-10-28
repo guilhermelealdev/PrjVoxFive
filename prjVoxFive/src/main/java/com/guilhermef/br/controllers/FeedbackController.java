@@ -1,7 +1,9 @@
 package com.guilhermef.br.controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,6 +39,16 @@ public class FeedbackController {
 	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<List<FeedbackResponseDto>> findMyFeedbacks(Authentication authentication) {
 		return ResponseEntity.ok(feedbackService.findByUsername(authentication.getName()));
+	}
+
+	@GetMapping("/admin/search")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<List<FeedbackResponseDto>> search(
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+			@RequestParam(required = false) String type,
+			@RequestParam(required = false) String status) {
+		return ResponseEntity.ok(feedbackService.search(startDate, endDate, type, status));
 	}
 
 	@GetMapping("/name")
@@ -90,7 +102,7 @@ public class FeedbackController {
 
 	@PutMapping("/admin/{id}/reply")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<FeedbackResponseDto> answer(@PathVariable Long id, @Valid @RequestBody FeedbackAnswerRequestDto dto) {
-		return ResponseEntity.ok(feedbackService.answer(id, dto));
+	public ResponseEntity<FeedbackResponseDto> answer(@PathVariable Long id, @Valid @RequestBody FeedbackAnswerRequestDto dto, Authentication authentication) {
+		return ResponseEntity.ok(feedbackService.answer(id, dto, authentication.getName()));
 	}
 }

@@ -11,6 +11,7 @@ public record FeedbackResponseDto(
 		String type,
 		String status,
 		String message,
-		String response
+		String response,
+		String answeredBy
 ) {
 }

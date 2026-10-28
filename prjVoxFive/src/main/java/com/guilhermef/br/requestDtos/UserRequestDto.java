@@ -14,8 +14,8 @@ public record UserRequestDto(
 		@NotBlank
 		@Size(min = 12, max = 128)
 		@Pattern(
-				regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
-				message = "Password must contain lowercase, uppercase and digit"
+				regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).+$",
+				message = "Password must contain lowercase, uppercase, digit, and special symbol"
 		)
 		String password,
 

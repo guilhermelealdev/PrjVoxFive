@@ -55,14 +55,13 @@ public class Feedback {
 	@Column(length = 4000)
 	private String response;
 
+	@Column(name = "answered_by", length = 100)
+	private String answeredBy;
+
 	@Override
 	public boolean equals(Object other) {
-		if (this == other) {
-			return true;
-		}
-		if (!(other instanceof Feedback feedback)) {
-			return false;
-		}
+		if (this == other) return true;
+		if (!(other instanceof Feedback feedback)) return false;
 		return id != null && id.equals(feedback.id);
 	}
 

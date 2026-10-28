@@ -23,3 +23,4 @@ CREATE TABLE IF NOT EXISTS tb_feedbacks (
     KEY idx_feedbacks_user_id (user_id),
     CONSTRAINT fk_feedbacks_user FOREIGN KEY (user_id) REFERENCES tb_users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ALTER TABLE tb_feedbacks ADD COLUMN answered_by VARCHAR(100);
