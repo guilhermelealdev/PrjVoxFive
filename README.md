@@ -1,4 +1,4 @@
-# VoxSeven - Sistema de Gestão de Feedbacks
+# VoxFive - Sistema de Gestão de Feedbacks
 
 ![Status](https://img.shields.io/badge/Status-Conclu%C3%ADdo-brightgreen)
 ![Java](https://img.shields.io/badge/Java-17+-orange)
@@ -10,11 +10,11 @@
 
 Este projeto foi desenvolvido como requisito obrigatório para a conclusão do Trabalho de Conclusão de Curso (TCC) do curso superior de tecnologia em Análise e Desenvolvimento de Sistemas do SENAI.
 
-O objetivo principal consistiu na criação de uma aplicação full-stack (Frontend e Backend) robusta, que atendesse aos requisitos funcionais de um sistema de feedback, aplicando padrões de segurança da informação, arquitetura de software limpa e boas práticas de mercado.
+O escopo do sistema foi idealizado e construído durante a **Saga SENAI**, uma iniciativa que conecta desafios de empresas reais com a academia. O objetivo central deste projeto foi resolver um problema prático de uma empresa parceira, que necessitava de uma ferramenta segura, rastreável e eficiente para centralizar o recebimento de feedbacks, sugestões e reclamações de seus clientes e colaboradores.
 
 ## 2. Visão Geral do Projeto
 
-O VoxSeven é um sistema corporativo voltado para o recebimento, gestão e análise de feedbacks, reclamações e sugestões. A aplicação possui um controle rigoroso de acesso baseado em perfis (Roles) e uma interface administrativa dedicada à análise de dados e comunicação com os usuários.
+O VoxFive é uma aplicação corporativa voltada para o recebimento, gestão e análise de feedbacks. O sistema possui um controle rigoroso de acesso baseado em perfis (Roles) e uma interface administrativa dedicada à análise de dados e comunicação direta com os usuários.
 
 ### 2.1. Funcionalidades por Perfil
 
