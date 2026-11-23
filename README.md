@@ -14,35 +14,38 @@ O escopo do sistema foi idealizado e construído durante a **Saga SENAI**, uma i
 
 ## 2. Visão Geral do Projeto
 
-O VoxFive é uma aplicação corporativa voltada para o recebimento, gestão e análise de feedbacks. O sistema possui um controle rigoroso de acesso baseado em perfis (Roles) e uma interface administrativa dedicada à análise de dados e comunicação direta com os usuários.
+O VoxFive é uma aplicação full-stack voltada para o recebimento, gestão e análise de feedbacks. O sistema possui um controle rigoroso de acesso baseado em perfis (Roles), uma interface administrativa completa para análise de dados e um mecanismo de auditoria para rastreamento de ações sensíveis.
 
 ### 2.1. Funcionalidades por Perfil
 
 **Usuários (Role: USER):**
 - Autenticação e cadastro seguro.
 - Envio de novos feedbacks categorizados.
-- Acompanhamento do status das solicitações (Em análise / Respondido).
-- Visualização das respostas encaminhadas pela equipe administrativa.
+- Acompanhamento do status das próprias solicitações.
+- Leitura das respostas encaminhadas pela equipe administrativa.
+- Recuperação de senha via token seguro de uso único.
 
 **Administradores (Role: ADMIN):**
-- Visualização e resposta de todos os feedbacks do sistema.
-- Dashboard gerencial contendo métricas (Volume total, Pendentes, Respondidos, Taxa de Resolução e Distribuição por Categoria).
-- Módulo de Consultas Avançadas: Filtros customizados por data, tipo e status, com renderização dos dados em tabela.
-- Gestão de acessos: Capacidade exclusiva de provisionar novas contas com privilégios de Administrador.
+- Gestão de Feedbacks: Visualização global, respostas oficiais e exclusão de registros.
+- Dashboard Gerencial: Métricas de volume, taxa de resolução, pendências e distribuição por categoria.
+- Consultas Avançadas: Filtros customizados por data, tipo e status, com renderização em tabela.
+- Gestão de Acessos: Capacidade exclusiva de provisionar novas contas com privilégios de Administrador.
+- Trilha de Auditoria (Audit Logs): Registro imutável de ações sensíveis (exclusões e criação de admins), contendo autor, ação e data/hora.
 
 ## 3. Arquitetura e Segurança (Backend)
 
 O backend foi construído com forte ênfase em AppSec (Segurança de Aplicações), implementando as seguintes camadas de proteção:
 
-- **Autenticação Stateless com JWT:** Uso de accessToken de curta duração e refreshToken com rotação e blacklist em memória.
-- **Criptografia de Senhas:** Hashes gerados via BCryptPasswordEncoder (fator de custo 12) com DelegatingPasswordEncoder para viabilizar migrações futuras de algoritmos.
-- **Rate Limiting:** Controle de requisições em rotas críticas (/auth/login, /auth/refresh, /users) utilizando janela deslizante, prevenindo ataques de força bruta.
+- **Autenticação Stateless com JWT:** Uso de accessToken de curta duração e refreshToken com rotação e blacklist.
+- **Criptografia de Senhas:** Hashes gerados via BCryptPasswordEncoder (fator de custo 12) com DelegatingPasswordEncoder.
+- **Rate Limiting:** Controle de requisições em rotas críticas (login, refresh, cadastro) utilizando janela deslizante em memória, prevenindo ataques de força bruta.
 - **Honeypot:** Endpoints iscas que registram tentativas de varredura e bloqueiam preventivamente o IP do atacante.
-- **CORS Restrito:** Configuração estrita para aceitar chamadas apenas da origem do Frontend React (localhost:5173 em ambiente de desenvolvimento).
-- **Prevenção de Vazamento de Dados:** Tratamento global de exceções (@ControllerAdvice) sem expor stacktraces, mensagens internas ou dados sensíveis.
+- **CORS Restrito:** Configuração estrita para aceitar chamadas apenas da origem do Frontend React.
+- **Prevenção de Vazamento de Dados:** Tratamento global de exceções sem expor stacktraces ou mensagens internas.
 - **Headers de Segurança:** Implementação de HSTS, X-Frame-Options, Content-Security-Policy e Referrer-Policy.
-- **Banco de Dados Versionado:** Uso de Flyway para controle de migrações e integridade do schema.
+- **Banco de Dados Versionado:** Uso de Flyway para controle de migrações (V1 a V4) e integridade do schema.
 - **Arquitetura em Camadas:** Separação estrita (Controller -> Service -> Repository), uso de DTOs (Records) e mapeamento com MapStruct.
+- **Trilha de Auditoria:** Interceptação de operações críticas de escrita para registro persistente em banco de dados.
 
 ## 4. Tecnologias Utilizadas
 
