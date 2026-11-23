@@ -16,6 +16,11 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
+    // Se for erro na rota de login, apenas rejeita para a tela mostrar a mensagem
+    if (originalRequest?.url?.includes('/auth/login')) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const refreshToken = sessionStorage.getItem('refreshToken');

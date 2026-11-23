@@ -13,7 +13,7 @@ export default function Navbar() {
   return (
     <div>
       <nav style={{ display: 'flex', gap: 20, padding: '16px 32px', background: '#142C14', color: '#fff', alignItems: 'center' }}>
-        <strong style={{ fontSize: 18, color: '#E4EB9C' }}>VoxSeven</strong>
+        <strong style={{ fontSize: 18, color: '#E4EB9C' }}>VoxFive</strong>
         <Link to="/ocorrencias" style={{ color: '#fff', textDecoration: 'none' }}>Feedbacks</Link>
         <Link to="/ocorrencias/nova" style={{ color: '#fff', textDecoration: 'none' }}>Novo Feedback</Link>
         

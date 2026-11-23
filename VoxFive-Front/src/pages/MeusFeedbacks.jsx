@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import ModalDetalhesFeedback from '../components/ModalDetalhesFeedback';
 import { feedbacksApi } from '../api/endpoints';
 import { useAuth } from '../auth/AuthContext';
@@ -7,6 +7,11 @@ import { formatarData } from '../api/mappers';
 
 export default function MeusFeedbacks() {
   const { usuario } = useAuth();
+  const location = useLocation();
+  
+  // Verifica se o usuário está na rota de gerenciamento do admin
+  const isAdminView = location.pathname === '/admin/feedbacks';
+
   const [feedbacks, setFeedbacks] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [aba, setAba] = useState('Todos');
@@ -15,7 +20,8 @@ export default function MeusFeedbacks() {
 
   const carregarDados = () => {
     setCarregando(true);
-    const promise = usuario.role === 'ADMIN' 
+    // Se estiver na visão do admin, busca todos. Se não, busca apenas os meus.
+    const promise = isAdminView 
       ? feedbacksApi.listarTodos() 
       : feedbacksApi.listarMeus();
 
@@ -27,7 +33,7 @@ export default function MeusFeedbacks() {
 
   useEffect(() => {
     carregarDados();
-  }, []);
+  }, [isAdminView]); // Recarrega se a rota mudar
 
   const filtrados = feedbacks.filter((f) => {
     const statusMatch = 
@@ -45,8 +51,14 @@ export default function MeusFeedbacks() {
     <div style={estilos.conteiner}>
       <div style={estilos.cartao}>
         <div style={estilos.cabecalho}>
-          <h2 style={estilos.titulo}>{usuario.role === 'ADMIN' ? 'TODOS OS FEEDBACKS' : 'MEUS FEEDBACKS'}</h2>
-          <p style={estilos.subtitulo}>Gerencie, filtre e acompanhe as solicitações</p>
+          <h2 style={estilos.titulo}>
+            {isAdminView ? 'GERENCIAR FEEDBACKS' : 'MEUS FEEDBACKS'}
+          </h2>
+          <p style={estilos.subtitulo}>
+            {isAdminView 
+              ? 'Clique em um feedback para respondê-lo ou excluí-lo.' 
+              : 'Gerencie, filtre e acompanhe o status das suas solicitações'}
+          </p>
         </div>
 
         <div style={estilos.conteinerBusca}>
@@ -93,7 +105,7 @@ export default function MeusFeedbacks() {
           )}
         </div>
 
-        {usuario.role !== 'ADMIN' && (
+        {!isAdminView && (
           <Link to="/ocorrencias/nova" style={{ textDecoration: 'none' }}>
             <button style={estilos.botaoNovo}>+ Novo feedback</button>
           </Link>
@@ -120,10 +132,11 @@ const estilos = {
   cartao: {
     background: '#FFFFFF',
     padding: 36,
-    borderRadius: 20,
+    borderRadius: 12,
     width: '100%',
     maxWidth: 640,
-    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.06)',
+    border: '1px solid #E1E8E0',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)',
     display: 'flex',
     flexDirection: 'column',
     gap: 24
@@ -158,7 +171,9 @@ const estilos = {
     color: '#667085',
     borderRadius: 0,
     fontSize: 14,
-    fontWeight: 500
+    fontWeight: 500,
+    border: 'none',
+    cursor: 'pointer'
   },
   abaAtiva: {
     flex: 1,
@@ -168,7 +183,9 @@ const estilos = {
     borderBottom: '3px solid #2D5128',
     fontWeight: 700,
     borderRadius: 0,
-    fontSize: 14
+    fontSize: 14,
+    border: 'none',
+    cursor: 'pointer'
   },
   lista: {
     display: 'flex',
@@ -190,7 +207,7 @@ const estilos = {
     alignItems: 'center',
     padding: 16,
     border: '1px solid #E1E8E0',
-    borderRadius: 12,
+    borderRadius: 8,
     cursor: 'pointer',
     background: '#FAFCFA',
     gap: 16,
@@ -222,16 +239,16 @@ const estilos = {
     minWidth: 100
   },
   etiquetaPendente: {
-    background: '#E4EB9C',
-    color: '#142C14',
+    background: '#FFFBEB',
+    color: '#D97706',
     padding: '4px 10px',
     borderRadius: 12,
     fontSize: 12,
     fontWeight: 600
   },
   etiquetaSucesso: {
-    background: '#2D5128',
-    color: '#FFFFFF',
+    background: '#ECFDF5',
+    color: '#059669',
     padding: '4px 10px',
     borderRadius: 12,
     fontSize: 12,
@@ -249,7 +266,7 @@ const estilos = {
     fontSize: 15,
     marginTop: 8,
     border: 'none',
-    borderRadius: 10,
+    borderRadius: 8,
     cursor: 'pointer',
     fontWeight: 600
   }

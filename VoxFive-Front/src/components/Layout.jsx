@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import logo from '../assets/logo.png';
 
 export default function Layout() {
   const { usuario, logout } = useAuth();
@@ -32,7 +33,7 @@ export default function Layout() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#F8FAF9' }}>
       
-      <header style={{ height: 64, background: '#FFFFFF', borderBottom: '1px solid #E1E8E0', display: 'flex', alignItems: 'center', padding: '0 24px', zIndex: 10 }}>
+      <header style={{ height: 72, background: '#FFFFFF', borderBottom: '1px solid #E1E8E0', display: 'flex', alignItems: 'center', padding: '0 24px', zIndex: 10 }}>
         <button 
           onClick={() => setSidebarAberta(!sidebarAberta)}
           style={{ background: 'transparent', border: 'none', color: '#142C14', cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: 20 }}
@@ -44,7 +45,9 @@ export default function Layout() {
           </svg>
         </button>
         
-        <strong style={{ fontSize: 20, color: '#142C14', letterSpacing: '-0.5px' }}>VoxSeven</strong>
+        <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => navigate('/ocorrencias')}>
+          <img src={logo} alt="VoxFive" style={{ height: 45, objectFit: 'contain' }} />
+        </div>
         
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
@@ -78,11 +81,22 @@ export default function Layout() {
             {usuario.role === 'ADMIN' && (
               <>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: 1, marginTop: 24, marginBottom: 12, paddingLeft: 20 }}>Administração</span>
+                
+                <Link to="/admin/feedbacks" style={menuItemStyle('/admin/feedbacks')}>
+                  Gerenciar Feedbacks
+                </Link>
+                
                 <Link to="/dashboard" style={menuItemStyle('/dashboard')}>
                   Dashboard
                 </Link>
                 <Link to="/consultas" style={menuItemStyle('/consultas')}>
                   Consultas Avançadas
+                </Link>
+                <Link to="/admin/novo" style={menuItemStyle('/admin/novo')}>
+                  Gerenciar Admins
+                </Link>
+                <Link to="/admin/audit-logs" style={menuItemStyle('/admin/audit-logs')}>
+                  Auditoria
                 </Link>
               </>
             )}

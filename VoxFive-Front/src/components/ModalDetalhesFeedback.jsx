@@ -7,6 +7,7 @@ export default function ModalDetalhesFeedback({ feedback, aoFechar, aoAtualizar 
   const { usuario } = useAuth();
   const [resposta, setResposta] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
 
   if (!feedback) return null;
 
@@ -15,13 +16,27 @@ export default function ModalDetalhesFeedback({ feedback, aoFechar, aoAtualizar 
     setEnviando(true);
     try {
       await feedbacksApi.responder(feedback.id, resposta);
-      alert('Resposta enviada com sucesso!');
       aoAtualizar();
       aoFechar();
     } catch (error) {
       alert('Erro ao responder feedback.');
     } finally {
       setEnviando(false);
+    }
+  };
+
+  const handleExcluir = async () => {
+    if (!window.confirm('Tem certeza que deseja excluir este feedback permanentemente?')) return;
+    
+    setExcluindo(true);
+    try {
+      await feedbacksApi.deletar(feedback.id);
+      aoAtualizar();
+      aoFechar();
+    } catch (error) {
+      alert('Erro ao excluir feedback.');
+    } finally {
+      setExcluindo(false);
     }
   };
 
@@ -73,9 +88,20 @@ export default function ModalDetalhesFeedback({ feedback, aoFechar, aoAtualizar 
           </div>
         ) : null}
 
-        <button style={estilos.botaoFechar} onClick={aoFechar}>
-          Fechar
-        </button>
+        <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+          {usuario.role === 'ADMIN' && (
+            <button 
+              style={estilos.botaoExcluir} 
+              onClick={handleExcluir}
+              disabled={excluindo}
+            >
+              {excluindo ? 'Excluindo...' : 'Excluir Feedback'}
+            </button>
+          )}
+          <button style={estilos.botaoFechar} onClick={aoFechar}>
+            Fechar
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -99,7 +125,7 @@ const estilos = {
   caixaModal: {
     background: '#FFFFFF',
     padding: 32,
-    borderRadius: 16,
+    borderRadius: 12,
     width: '100%',
     maxWidth: 500,
     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.18)',
@@ -184,18 +210,27 @@ const estilos = {
     padding: 10, 
     background: '#142C14', 
     color: '#fff', 
-    borderRadius: 8, 
+    borderRadius: 6, 
     fontWeight: 'bold',
     border: 'none',
     cursor: 'pointer'
   },
+  botaoExcluir: {
+    flex: 1,
+    padding: 12,
+    background: '#FDECEC',
+    color: '#A02020',
+    border: '1px solid #F5B7B7',
+    borderRadius: 8,
+    fontWeight: 'bold',
+    cursor: 'pointer'
+  },
   botaoFechar: {
-    width: '100%',
+    flex: 1,
     padding: 12,
     background: 'transparent',
     color: '#142C14',
     border: '1px solid #E1E8E0',
-    marginTop: 8,
     borderRadius: 8,
     fontWeight: 'bold',
     cursor: 'pointer'
