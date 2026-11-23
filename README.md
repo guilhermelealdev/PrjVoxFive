@@ -19,11 +19,10 @@ O VoxFive é uma aplicação full-stack voltada para o recebimento, gestão e an
 ### 2.1. Funcionalidades por Perfil
 
 **Usuários (Role: USER):**
-- Autenticação e cadastro seguro.
+- Autenticação, cadastro seguro e recuperação de senha.
 - Envio de novos feedbacks categorizados.
 - Acompanhamento do status das próprias solicitações.
 - Leitura das respostas encaminhadas pela equipe administrativa.
-- Recuperação de senha via token seguro de uso único.
 
 **Administradores (Role: ADMIN):**
 - Gestão de Feedbacks: Visualização global, respostas oficiais e exclusão de registros.
@@ -59,7 +58,7 @@ O backend foi construído com forte ênfase em AppSec (Segurança de Aplicaçõe
 
 **Frontend:**
 - React.js com Vite
-- React Router DOM (Navegação SPA)
+- React Router DOM (Navegação SPA e proteção de rotas)
 - Axios (Consumo de API com interceptadores para renovação de token)
 - Context API (Gestão de estado de autenticação)
 
