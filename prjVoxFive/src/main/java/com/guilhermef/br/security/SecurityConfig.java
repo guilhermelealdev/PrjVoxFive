@@ -24,6 +24,7 @@ import com.guilhermef.br.honeypot.HoneypotFilter;
 import com.guilhermef.br.honeypot.SuspiciousIpRegistry;
 import com.guilhermef.br.ratelimit.InMemoryRequestRateLimiter;
 import com.guilhermef.br.ratelimit.RateLimitFilter;
+import com.guilhermef.br.ratelimit.RateLimitProperties;
 
 @Configuration
 @EnableMethodSecurity
@@ -73,7 +74,7 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-						.requestMatchers("/auth/login", "/auth/refresh").permitAll()
+						.requestMatchers("/auth/login", "/auth/refresh", "/auth/forgot-password", "/auth/reset-password").permitAll()
 						.requestMatchers(HttpMethod.POST, "/users").permitAll()
 						.requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/info").permitAll()
 						.requestMatchers(HttpMethod.GET, "/feedbacks/me").authenticated()

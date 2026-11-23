@@ -20,11 +20,13 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;
 	private final PasswordEncoder passwordEncoder;
+	private final AuditLogService auditLogService;
 
-	public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+	public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, AuditLogService auditLogService) {
 		this.userRepository = userRepository;
 		this.userMapper = userMapper;
 		this.passwordEncoder = passwordEncoder;
+		this.auditLogService = auditLogService;
 	}
 
 	@Transactional(readOnly = true)
@@ -42,8 +44,10 @@ public class UserService {
 	}
 
 	@Transactional
-	public UserResponseDto saveAdmin(UserRequestDto dto) {
-		return saveUserWithRole(dto, "ADMIN");
+	public UserResponseDto saveAdmin(UserRequestDto dto, String actorUsername) {
+		UserResponseDto response = saveUserWithRole(dto, "ADMIN");
+		auditLogService.logAction("CRIAR_ADMIN", actorUsername, dto.username());
+		return response;
 	}
 
 	@Transactional
@@ -87,9 +91,10 @@ public class UserService {
 	}
 
 	@Transactional
-	public void deleteById(Long id) {
+	public void deleteById(Long id, String actorUsername) {
 		User user = findByIdOrThrow(id);
 		userRepository.delete(user);
+		auditLogService.logAction("DELETAR_CONTA", actorUsername, user.getUsername());
 	}
 
 	private User findByIdOrThrow(Long id) {

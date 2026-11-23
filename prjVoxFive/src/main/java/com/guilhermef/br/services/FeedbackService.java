@@ -26,11 +26,13 @@ public class FeedbackService {
 	private final FeedbackRepository feedbackRepository;
 	private final UserRepository userRepository;
 	private final FeedbackMapper feedbackMapper;
+	private final AuditLogService auditLogService;
 
-	public FeedbackService(FeedbackRepository feedbackRepository, UserRepository userRepository, FeedbackMapper feedbackMapper) {
+	public FeedbackService(FeedbackRepository feedbackRepository, UserRepository userRepository, FeedbackMapper feedbackMapper, AuditLogService auditLogService) {
 		this.feedbackRepository = feedbackRepository;
 		this.userRepository = userRepository;
 		this.feedbackMapper = feedbackMapper;
+		this.auditLogService = auditLogService;
 	}
 
 	@Transactional(readOnly = true)
@@ -76,9 +78,10 @@ public class FeedbackService {
 	}
 
 	@Transactional
-	public void deleteById(Long id) {
+	public void deleteById(Long id, String actorUsername) {
 		Feedback feedback = findOrThrow(id);
 		feedbackRepository.delete(feedback);
+		auditLogService.logAction("DELETAR_FEEDBACK", actorUsername, "ID: " + id);
 	}
 
 	@Transactional

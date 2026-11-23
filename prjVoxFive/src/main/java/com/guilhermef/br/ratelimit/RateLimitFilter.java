@@ -12,7 +12,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guilhermef.br.handler.ApiErrorResponse;
-import com.guilhermef.br.security.RateLimitProperties;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

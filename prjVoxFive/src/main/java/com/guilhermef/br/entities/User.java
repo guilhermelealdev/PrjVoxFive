@@ -1,5 +1,6 @@
 package com.guilhermef.br.entities;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -51,14 +52,18 @@ public class User {
 	@Column(nullable = false, updatable = false, length = 20)
 	private String role;
 
+	@JsonIgnore
+	@Column(name = "reset_token", length = 255)
+	private String resetToken;
+
+	@JsonIgnore
+	@Column(name = "reset_token_expiry")
+	private LocalDateTime resetTokenExpiry;
+
 	@Override
 	public boolean equals(Object other) {
-		if (this == other) {
-			return true;
-		}
-		if (!(other instanceof User user)) {
-			return false;
-		}
+		if (this == other) return true;
+		if (!(other instanceof User user)) return false;
 		return id != null && id.equals(user.id);
 	}
 

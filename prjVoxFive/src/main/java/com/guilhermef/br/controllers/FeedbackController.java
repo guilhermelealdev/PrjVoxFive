@@ -89,8 +89,8 @@ public class FeedbackController {
 
 	@DeleteMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<Void> deleteById(@PathVariable Long id) {
-		feedbackService.deleteById(id);
+	public ResponseEntity<Void> deleteById(@PathVariable Long id, Authentication authentication) {
+		feedbackService.deleteById(id, authentication.getName());
 		return ResponseEntity.noContent().build();
 	}
 
