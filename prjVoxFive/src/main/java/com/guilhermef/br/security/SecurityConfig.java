@@ -78,7 +78,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/users").permitAll()
 						.requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/info").permitAll()
 						.requestMatchers(HttpMethod.GET, "/feedbacks/me").authenticated()
-						.requestMatchers("/users/admin", "/users/admin/**").hasRole("ADMIN")
+						.requestMatchers("/users/admin", "/users/admin/**").denyAll()
 						.requestMatchers(HttpMethod.POST, "/feedbacks").authenticated()
 						.requestMatchers(HttpMethod.PUT, "/feedbacks/admin/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/feedbacks/**").hasRole("ADMIN")
@@ -87,6 +87,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/feedbacks/**").hasRole("ADMIN")
+						.requestMatchers(HttpMethod.GET, "/audit-logs").hasRole("ADMIN")
 						.anyRequest().authenticated()
 				)
 				.exceptionHandling(handling -> handling
