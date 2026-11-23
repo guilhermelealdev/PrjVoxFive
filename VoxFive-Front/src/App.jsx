@@ -9,7 +9,6 @@ import Consultas from './pages/Consultas';
 import Ocorrencias from './pages/MeusFeedbacks';
 import NovaOcorrencia from './pages/NovoFeedback';
 import Layout from './components/Layout';
-import NovoAdmin from './pages/NovoAdmin';
 import AuditLogs from './pages/AuditLogs';
 
 export default function App() {
@@ -23,7 +22,6 @@ export default function App() {
           
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
-              {/* Rotas padronizadas */}
               <Route path="/feedbacks" element={<Ocorrencias />} />
               <Route path="/feedbacks/nova" element={<NovaOcorrencia />} />
             </Route>
@@ -33,7 +31,6 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/consultas" element={<Consultas />} />
-              <Route path="/admin/novo" element={<NovoAdmin />} />
               <Route path="/admin/feedbacks" element={<Ocorrencias />} />
               <Route path="/admin/audit-logs" element={<AuditLogs />} />
             </Route>

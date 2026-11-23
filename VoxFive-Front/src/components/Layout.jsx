@@ -91,9 +91,6 @@ export default function Layout() {
                 <Link to="/consultas" style={menuItemStyle('/consultas')}>
                   Consultas Avançadas
                 </Link>
-                <Link to="/admin/novo" style={menuItemStyle('/admin/novo')}>
-                  Gerenciar Admins
-                </Link>
                 <Link to="/admin/audit-logs" style={menuItemStyle('/admin/audit-logs')}>
                   Auditoria
                 </Link>
