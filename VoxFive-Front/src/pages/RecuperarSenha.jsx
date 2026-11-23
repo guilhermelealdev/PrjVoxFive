@@ -104,7 +104,7 @@ export default function RecuperarSenha() {
                   style={{ padding: '14px 16px', borderRadius: 8, border: '1px solid #E1E8E0', outline: 'none' }}
                 />
               </div>
-              {erro && <p style={{ color: '#A02020', fontSize: 13, background: '#FDECEC', padding: 10, borderRadius: 6, borderLeft: '3px solid #A02020' }}>{erro}</p>}
+              {erro && <p style={{ color: '#A02020', fontSize: 13, background: '#FDECEC', padding: 10, borderRadius: 6, border: '1px solid #F5B7B7', textAlign: 'center' }}>{erro}</p>}
               <button type="submit" disabled={carregando} style={{ padding: 16, background: '#142C14', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
                 {carregando ? 'Buscando...' : 'Enviar Token'}
               </button>
@@ -141,7 +141,7 @@ export default function RecuperarSenha() {
                   Mínimo de 12 caracteres, incluindo maiúsculas, minúsculas, números e símbolos (@, #, etc).
                 </span>
               </div>
-              {erro && <p style={{ color: '#A02020', fontSize: 13, background: '#FDECEC', padding: 10, borderRadius: 6, borderLeft: '3px solid #A02020' }}>{erro}</p>}
+              {erro && <p style={{ color: '#A02020', fontSize: 13, background: '#FDECEC', padding: 10, borderRadius: 6, border: '1px solid #F5B7B7', textAlign: 'center' }}>{erro}</p>}
               <button type="submit" disabled={carregando} style={{ padding: 16, background: '#142C14', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
                 {carregando ? 'Redefinindo...' : 'Redefinir Senha'}
               </button>

@@ -28,7 +28,6 @@ export default function Cadastro() {
           setErro('Dados inválidos. Verifique os campos.');
         }
       } else if (error.response?.status === 409) {
-        // AQUI ESTÁ A CORREÇÃO: O backend retorna 409 quando o e-mail ou usuário já existe
         setErro(error.response.data.message || 'E-mail ou usuário já cadastrado.');
       } else if (error.response?.status === 429) {
         setErro('Muitas tentativas. Aguarde um minuto e tente novamente.');
@@ -112,7 +111,11 @@ export default function Cadastro() {
             </div>
             
             <div style={{ minHeight: 24 }}>
-              {erro && <p style={{ color: '#A02020', fontSize: 13, background: '#FDECEC', padding: '10px 14px', borderRadius: 6, margin: 0, borderLeft: '3px solid #A02020' }}>{erro}</p>}
+              {erro && (
+                <div style={{ color: '#A02020', fontSize: 13, background: '#FDECEC', padding: '12px 16px', borderRadius: 8, border: '1px solid #F5B7B7', textAlign: 'center', fontWeight: 500 }}>
+                  {erro}
+                </div>
+              )}
             </div>
 
             <button 

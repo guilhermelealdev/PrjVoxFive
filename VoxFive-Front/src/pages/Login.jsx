@@ -20,7 +20,7 @@ export default function Login() {
     
     try {
       await login(username, senha);
-      navigate('/ocorrencias');
+      navigate('/feedbacks');
     } catch (error) {
       if (error.response?.status === 401) setErro('Usuário ou senha inválidos.');
       else if (error.response?.status === 429) setErro('Muitas tentativas. Aguarde um minuto.');

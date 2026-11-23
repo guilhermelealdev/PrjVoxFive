@@ -45,7 +45,7 @@ export default function Layout() {
           </svg>
         </button>
         
-        <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => navigate('/ocorrencias')}>
+        <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => navigate('/feedbacks')}>
           <img src={logo} alt="VoxFive" style={{ height: 45, objectFit: 'contain' }} />
         </div>
         
@@ -71,10 +71,10 @@ export default function Layout() {
           <nav style={{ padding: '24px 12px', display: 'flex', flexDirection: 'column', width: 240 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12, paddingLeft: 20 }}>Menu Principal</span>
             
-            <Link to="/ocorrencias" style={menuItemStyle('/ocorrencias')}>
+            <Link to="/feedbacks" style={menuItemStyle('/feedbacks')}>
               Meus Feedbacks
             </Link>
-            <Link to="/ocorrencias/nova" style={menuItemStyle('/ocorrencias/nova')}>
+            <Link to="/feedbacks/nova" style={menuItemStyle('/feedbacks/nova')}>
               Novo Feedback
             </Link>
             
@@ -85,7 +85,6 @@ export default function Layout() {
                 <Link to="/admin/feedbacks" style={menuItemStyle('/admin/feedbacks')}>
                   Gerenciar Feedbacks
                 </Link>
-                
                 <Link to="/dashboard" style={menuItemStyle('/dashboard')}>
                   Dashboard
                 </Link>

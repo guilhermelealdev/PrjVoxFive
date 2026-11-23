@@ -23,8 +23,9 @@ export default function App() {
           
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
-              <Route path="/ocorrencias" element={<Ocorrencias />} />
-              <Route path="/ocorrencias/nova" element={<NovaOcorrencia />} />
+              {/* Rotas padronizadas */}
+              <Route path="/feedbacks" element={<Ocorrencias />} />
+              <Route path="/feedbacks/nova" element={<NovaOcorrencia />} />
             </Route>
           </Route>
 
@@ -38,7 +39,7 @@ export default function App() {
             </Route>
           </Route>
           
-          <Route path="*" element={<Navigate to="/ocorrencias" />} />
+          <Route path="*" element={<Navigate to="/feedbacks" />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
